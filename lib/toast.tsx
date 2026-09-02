@@ -11,10 +11,10 @@ interface ToastOptions extends RHToastOptions {
 
 const variantStyles: Record<Variant, { border: string; Icon: LucideIcon | null; text: string }> = {
   success: { border: 'rgba(34,197,94,0.5)', Icon: CheckCircle2, text: '#4ade80' },
-  error: { border: 'rgba(239,68,68,0.5)', Icon: XCircle, text: '#f87171' },
+  error: { border: 'rgba(168,85,247,0.5)', Icon: XCircle, text: '#c084fc' },
   info: { border: 'rgba(59,130,246,0.5)', Icon: Info, text: '#60a5fa' },
   warning: { border: 'rgba(250,204,21,0.5)', Icon: AlertTriangle, text: '#facc15' },
-  blank: { border: 'rgba(239,68,68,0.4)', Icon: null, text: '#e5e7eb' },
+  blank: { border: 'rgba(168,85,247,0.4)', Icon: null, text: '#e5e7eb' },
 }
 
 function createToast(message: string, variant: Variant, options?: ToastOptions) {
@@ -61,7 +61,7 @@ function createToast(message: string, variant: Variant, options?: ToastOptions) 
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = 'rgba(255,255,255,0.8)'
-            e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'
+            e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.color = 'rgba(255,255,255,0.3)'
@@ -80,7 +80,7 @@ function createToast(message: string, variant: Variant, options?: ToastOptions) 
         borderRadius: 4,
         padding: '10px 14px',
         maxWidth: 500,
-        boxShadow: '0 0 15px rgba(239,68,68,0.08)',
+        boxShadow: '0 0 15px rgba(168,85,247,0.08)',
         ...(options?.style || {}),
       },
     }

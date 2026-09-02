@@ -9,7 +9,7 @@ const Toaster = () => {
       toastOptions={{
         style: {
           background: '#0a0a0a',
-          border: '1px solid rgba(239,68,68,0.4)',
+          border: '1px solid rgba(168,85,247,0.4)',
           color: '#e5e7eb',
           fontSize: 13,
         },

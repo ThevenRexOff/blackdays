@@ -22,24 +22,24 @@ export function StatCard({ title, value, change, changeType, icon, subtitle }: S
   const Icon = icons[icon]
   
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-red-900/30 bg-gradient-to-br from-[#0d0d0d] to-[#111111] p-5 transition-all duration-300 hover:border-red-700/40 hover:shadow-lg hover:shadow-red-900/10">
+    <div className="group relative overflow-hidden rounded-lg border border-purple-900/30 bg-gradient-to-br from-[#0d0d0d] to-[#111111] p-5 transition-all duration-300 hover:border-purple-700/40 hover:shadow-lg hover:shadow-purple-900/10">
       {/* Corner decorations */}
       <div className="absolute left-0 top-0 h-8 w-8">
         <svg viewBox="0 0 32 32" className="h-full w-full">
-          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(220, 38, 38, 0.3)" />
+          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(147, 51, 234, 0.3)" />
         </svg>
       </div>
       <div className="absolute bottom-0 right-0 h-8 w-8 rotate-180">
         <svg viewBox="0 0 32 32" className="h-full w-full">
-          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(220, 38, 38, 0.2)" />
+          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(147, 51, 234, 0.2)" />
         </svg>
       </div>
       
       {/* Glow effect on hover */}
-      <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 via-red-600/5 to-red-600/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/5 to-purple-600/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       
       {/* Scan line */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
       
       <div className="relative flex items-start justify-between">
         <div>
@@ -48,7 +48,7 @@ export function StatCard({ title, value, change, changeType, icon, subtitle }: S
           {subtitle ? (
             <p className="mt-1 font-mono text-sm text-emerald-400">{subtitle}</p>
           ) : (
-            <p className={`mt-1 font-mono text-sm ${changeType === 'positive' ? 'text-emerald-400' : 'text-red-400'}`}>
+            <p className={`mt-1 font-mono text-sm ${changeType === 'positive' ? 'text-emerald-400' : 'text-purple-400'}`}>
               <span className="inline-flex items-center">
                 {changeType === 'positive' ? (
                   <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,17 +70,17 @@ export function StatCard({ title, value, change, changeType, icon, subtitle }: S
           <svg className="absolute inset-0 h-full w-full" viewBox="0 0 56 56">
             <path 
               d="M28,2 L52,15 L52,41 L28,54 L4,41 L4,15 Z" 
-              fill="rgba(220, 38, 38, 0.1)" 
-              stroke="rgba(220, 38, 38, 0.3)"
+              fill="rgba(147, 51, 234, 0.1)" 
+              stroke="rgba(147, 51, 234, 0.3)"
               strokeWidth="1"
             />
           </svg>
-          <Icon className="relative z-10 h-6 w-6 text-red-500" />
+          <Icon className="relative z-10 h-6 w-6 text-purple-500" />
         </div>
       </div>
       
       {/* Bottom decorative line */}
-      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-red-900/30 to-transparent" />
+      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-900/30 to-transparent" />
     </div>
   )
 }

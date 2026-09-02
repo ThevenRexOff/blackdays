@@ -178,7 +178,7 @@ export default function AdminKeysPage() {
             onClick={() => setFilter('all')}
             className={`border px-4 py-1.5 font-mono-cyber text-xs tracking-wider transition-all cursor-pointer ${
               filter === 'all'
-                ? 'border-red-500 bg-red-950/40 text-red-400'
+                ? 'border-purple-500 bg-purple-950/40 text-purple-400'
                 : 'border-gray-800 bg-black/40 text-gray-500 hover:text-gray-300'
             }`}
           >
@@ -219,7 +219,7 @@ export default function AdminKeysPage() {
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center justify-center gap-1.5 border border-red-500/50 bg-red-950/40 px-4 py-2 font-mono-cyber text-xs font-bold text-red-400 hover:bg-red-600 hover:text-white transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 border border-purple-500/50 bg-purple-950/40 px-4 py-2 font-mono-cyber text-xs font-bold text-purple-400 hover:bg-purple-600 hover:text-white transition-all cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" /> GENERAR KEYS
           </button>
@@ -227,28 +227,28 @@ export default function AdminKeysPage() {
       </div>
 
       {/* Keys Table */}
-      <div className="overflow-x-auto cyber-clip border border-red-500/30 bg-black/90">
+      <div className="overflow-x-auto cyber-clip border border-purple-500/30 bg-black/90">
         <table className="w-full text-left font-mono-cyber text-xs">
           <thead>
-            <tr className="border-b border-red-900/50 bg-red-950/20">
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Código Key</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Rango</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Créditos</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Días de Membresía</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Estado</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Creado Por</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Creado En</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Acciones</th>
+            <tr className="border-b border-purple-900/50 bg-purple-950/20">
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Código Key</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Rango</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Créditos</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Días de Membresía</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Estado</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Creado Por</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Creado En</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((k) => (
-              <tr key={k.id} className="border-b border-gray-800 hover:bg-red-950/10 transition-colors">
+              <tr key={k.id} className="border-b border-gray-800 hover:bg-purple-950/10 transition-colors">
                 <td className="px-4 py-3 font-bold text-white flex items-center gap-2">
                   <span className="font-mono text-sm tracking-wider">{k.key}</span>
                   <button
                     onClick={() => handleCopy(k.key)}
-                    className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                    className="text-gray-500 hover:text-purple-400 transition-colors p-1"
                     title="Copiar Clave"
                   >
                     {copiedKey === k.key ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
@@ -256,7 +256,7 @@ export default function AdminKeysPage() {
                 </td>
                 <td className="px-4 py-3">
                   <span className={`uppercase font-bold text-[10px] ${
-                    k.rank === 'admin' ? 'text-red-400' :
+                    k.rank === 'admin' ? 'text-purple-400' :
                     k.rank === 'moderador' ? 'text-purple-400' :
                     k.rank === 'seller' ? 'text-blue-400' :
                     k.rank === 'vip' ? 'text-yellow-400' :
@@ -308,7 +308,7 @@ export default function AdminKeysPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteKey(k.id, k.key)}
-                        className="flex items-center gap-1 border border-red-500/50 bg-red-950/40 px-3 py-1 text-red-400 hover:bg-red-600 hover:text-white transition-all cursor-pointer text-[10px] font-bold uppercase"
+                        className="flex items-center gap-1 border border-purple-500/50 bg-purple-950/40 px-3 py-1 text-purple-400 hover:bg-purple-600 hover:text-white transition-all cursor-pointer text-[10px] font-bold uppercase"
                       >
                         <Trash2 className="h-3 w-3" /> Eliminar
                       </button>
@@ -336,7 +336,7 @@ export default function AdminKeysPage() {
           <div className="relative w-full max-w-lg cyber-clip border border-blue-500/50 bg-black p-6 shadow-[0_0_30px_rgba(59,130,246,0.2)] matrix-bg">
             <button
               onClick={() => setEditModal(null)}
-              className="absolute right-4 top-4 text-red-500 hover:text-red-400 cursor-pointer"
+              className="absolute right-4 top-4 text-purple-500 hover:text-purple-400 cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
@@ -411,26 +411,26 @@ export default function AdminKeysPage() {
       {/* Generate Keys Modal */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg cyber-clip border border-red-500/50 bg-black p-6 shadow-[0_0_30px_rgba(239,68,68,0.2)] matrix-bg">
+          <div className="relative w-full max-w-lg cyber-clip border border-purple-500/50 bg-black p-6 shadow-[0_0_30px_rgba(168,85,247,0.2)] matrix-bg">
             <button
               onClick={() => setShowCreate(false)}
-              className="absolute right-4 top-4 text-red-500 hover:text-red-400 cursor-pointer"
+              className="absolute right-4 top-4 text-purple-500 hover:text-purple-400 cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
-            <div className="mb-6 flex items-center gap-3 border-b border-red-900/50 pb-4">
-              <KeyRound className="h-6 w-6 text-red-500" />
+            <div className="mb-6 flex items-center gap-3 border-b border-purple-900/50 pb-4">
+              <KeyRound className="h-6 w-6 text-purple-500" />
               <h2 className="font-mono-cyber text-lg font-bold text-white uppercase tracking-widest">
                 GENERAR CLAVES DE ACTIVACIÓN
               </h2>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-400">Rango a Otorgar</label>
+                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-400">Rango a Otorgar</label>
                 <select
                   value={createRank}
                   onChange={(e) => setCreateRank(e.target.value)}
-                  className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-red-500 focus:outline-none cursor-pointer"
+                  className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-purple-500 focus:outline-none cursor-pointer"
                 >
                   <option value="premium">premium</option>
                   <option value="vip">vip</option>
@@ -464,12 +464,12 @@ export default function AdminKeysPage() {
               </div>
 
               <div>
-                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-400">Cantidad a Generar</label>
+                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-400">Cantidad a Generar</label>
                 <input
                   type="number"
                   value={createCount}
                   onChange={(e) => setCreateCount(Math.min(50, Math.max(1, Number(e.target.value))))}
-                  className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-red-500 focus:outline-none"
+                  className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-purple-500 focus:outline-none"
                   min={1}
                   max={50}
                 />
@@ -479,7 +479,7 @@ export default function AdminKeysPage() {
             <div className="mt-8 flex gap-3">
               <button
                 onClick={handleGenerateKeys}
-                className="flex-1 cyber-clip-alt border border-red-500/50 bg-red-950/40 px-4 py-2 font-mono-cyber text-sm font-bold text-red-400 transition-all hover:bg-red-600 hover:text-white cursor-pointer"
+                className="flex-1 cyber-clip-alt border border-purple-500/50 bg-purple-950/40 px-4 py-2 font-mono-cyber text-sm font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white cursor-pointer"
                 disabled={generating}
               >
                 {generating ? 'GENERANDO...' : 'GENERAR'}

@@ -174,23 +174,23 @@ export default function AdminGatesPage() {
         </button>
       </div>
 
-      <div className="overflow-x-auto cyber-clip border border-red-500/30 bg-black/90">
+      <div className="overflow-x-auto cyber-clip border border-purple-500/30 bg-black/90">
         <table className="w-full text-left font-mono-cyber text-xs">
           <thead>
-            <tr className="border-b border-red-900/50 bg-red-950/20">
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Gate</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Categoría</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Rango Min</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Estado</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Costo L/D</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Stats</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">SR</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Acciones</th>
+            <tr className="border-b border-purple-900/50 bg-purple-950/20">
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Gate</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Categoría</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Rango Min</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Estado</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Costo L/D</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Stats</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">SR</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {gates.map((gate) => (
-              <tr key={gate.id} className="border-b border-gray-800 hover:bg-red-950/10 transition-colors">
+              <tr key={gate.id} className="border-b border-gray-800 hover:bg-purple-950/10 transition-colors">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div>
@@ -198,7 +198,7 @@ export default function AdminGatesPage() {
                       <p className="text-[9px] text-gray-600 mt-0.5">{gate.id.slice(0, 12)}...</p>
                     </div>
                     <button onClick={() => openEdit(gate)}
-                      className="p-1 text-gray-600 hover:text-red-400 transition-colors cursor-pointer" title="Editar gate">
+                      className="p-1 text-gray-600 hover:text-purple-400 transition-colors cursor-pointer" title="Editar gate">
                       <Pencil className="h-3 w-3" />
                     </button>
                   </div>
@@ -207,7 +207,7 @@ export default function AdminGatesPage() {
                 <td className="px-4 py-3 text-gray-400 uppercase">{gate.category}</td>
                 <td className="px-4 py-3">
                   <span className={`uppercase font-bold text-[10px] ${
-                    gate.minRank === 'admin' ? 'text-red-400' :
+                    gate.minRank === 'admin' ? 'text-purple-400' :
                     gate.minRank === 'moderador' ? 'text-purple-400' :
                     gate.minRank === 'seller' ? 'text-blue-400' :
                     gate.minRank === 'vip' ? 'text-yellow-400' :
@@ -221,7 +221,7 @@ export default function AdminGatesPage() {
                         <Eye className="h-3 w-3" /> Activo
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-red-400 border border-red-900/40 bg-red-950/30 px-2 py-1">
+                      <span className="flex items-center gap-1 text-purple-400 border border-purple-900/40 bg-purple-950/30 px-2 py-1">
                         <EyeOff className="h-3 w-3" /> Inactivo
                       </span>
                     )}
@@ -234,7 +234,7 @@ export default function AdminGatesPage() {
                         className="w-16 border border-green-900/50 bg-black/50 px-1 py-1 text-green-400 text-center" />
                       <span className="text-gray-600">/</span>
                       <input type="number" value={editCreditsDead} onChange={e => setEditCreditsDead(Number(e.target.value))}
-                        className="w-16 border border-red-900/50 bg-black/50 px-1 py-1 text-red-400 text-center" />
+                        className="w-16 border border-purple-900/50 bg-black/50 px-1 py-1 text-purple-400 text-center" />
                       <button onClick={() => saveCredits(gate.id)} className="px-2 py-1 border border-green-500/50 bg-green-950/40 text-green-400 hover:bg-green-600 hover:text-white cursor-pointer text-[10px]"><Save className="h-3 w-3 inline" /></button>
                       <button onClick={() => setEditingId(null)} className="px-2 py-1 border border-gray-700 bg-black/60 text-gray-400 hover:bg-gray-800 cursor-pointer text-[10px]"><X className="h-3 w-3 inline" /></button>
                     </div>
@@ -243,7 +243,7 @@ export default function AdminGatesPage() {
                       className="flex items-center gap-1 text-gray-300 hover:text-white cursor-pointer">
                       <span className="text-green-400">{gate.creditsLive}</span>
                       <span className="text-gray-600">/</span>
-                      <span className="text-red-400">{gate.creditsDead}</span>
+                      <span className="text-purple-400">{gate.creditsDead}</span>
                       <ArrowUpDown className="h-3 w-3 text-gray-600 ml-1" />
                     </button>
                   )}
@@ -252,7 +252,7 @@ export default function AdminGatesPage() {
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-0.5 text-green-400"><CheckCircle2 className="h-3 w-3" />{gate.stats.lives}</span>
                     <span className="text-gray-600">|</span>
-                    <span className="flex items-center gap-0.5 text-red-400"><XCircle className="h-3 w-3" />{gate.stats.deads}</span>
+                    <span className="flex items-center gap-0.5 text-purple-400"><XCircle className="h-3 w-3" />{gate.stats.deads}</span>
                     <span className="text-gray-600">|</span>
                     <span className="flex items-center gap-0.5 text-gray-400"><Activity className="h-3 w-3" />{gate.stats.total}</span>
                   </div>
@@ -267,7 +267,7 @@ export default function AdminGatesPage() {
                     <button onClick={() => toggleActive(gate)}
                       className={`px-3 py-1 border text-[10px] font-bold uppercase cursor-pointer transition-all ${
                         gate.isActive
-                          ? 'border-red-500/50 bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white'
+                          ? 'border-purple-500/50 bg-purple-950/40 text-purple-400 hover:bg-purple-600 hover:text-white'
                           : 'border-green-500/50 bg-green-950/40 text-green-400 hover:bg-green-600 hover:text-white'
                       }`}>
                       {gate.isActive ? 'Desactivar' : 'Activar'}
@@ -277,7 +277,7 @@ export default function AdminGatesPage() {
                       Editar
                     </button>
                     <button onClick={() => deleteGate(gate)}
-                      className="px-3 py-1 border border-red-500/50 bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white text-[10px] font-bold uppercase cursor-pointer transition-all">
+                      className="px-3 py-1 border border-purple-500/50 bg-purple-950/40 text-purple-400 hover:bg-purple-600 hover:text-white text-[10px] font-bold uppercase cursor-pointer transition-all">
                       <Trash2 className="h-3 w-3" />
                     </button>
                   </div>
@@ -291,38 +291,38 @@ export default function AdminGatesPage() {
       {/* Edit Modal */}
       {editModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg cyber-clip border border-red-500/50 bg-black p-6 shadow-[0_0_30px_rgba(239,68,68,0.3)] matrix-bg">
-            <button onClick={() => setEditModal(null)} className="absolute right-4 top-4 text-red-500 hover:text-red-400 cursor-pointer">
+          <div className="relative w-full max-w-lg cyber-clip border border-purple-500/50 bg-black p-6 shadow-[0_0_30px_rgba(168,85,247,0.3)] matrix-bg">
+            <button onClick={() => setEditModal(null)} className="absolute right-4 top-4 text-purple-500 hover:text-purple-400 cursor-pointer">
               <X className="h-5 w-5" />
             </button>
-            <div className="mb-6 flex items-center gap-3 border-b border-red-900/50 pb-4">
-              <Pencil className="h-6 w-6 text-red-500" />
-              <h2 className="font-mono-cyber text-lg font-bold text-white uppercase tracking-widest neon-text-red">EDITAR GATE</h2>
+            <div className="mb-6 flex items-center gap-3 border-b border-purple-900/50 pb-4">
+              <Pencil className="h-6 w-6 text-purple-500" />
+              <h2 className="font-mono-cyber text-lg font-bold text-white uppercase tracking-widest neon-text-purple">EDITAR GATE</h2>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-400">Nombre</label>
+                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-400">Nombre</label>
                 <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
-                  className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-red-500 focus:outline-none" />
+                  className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-purple-500 focus:outline-none" />
               </div>
               <div>
-                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-400">Descripción</label>
+                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-400">Descripción</label>
                 <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={3}
-                  className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-red-500 focus:outline-none resize-none" />
+                  className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-purple-500 focus:outline-none resize-none" />
               </div>
               <div>
-                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-400">Categoría</label>
+                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-400">Categoría</label>
                 <select value={editCategory} onChange={e => setEditCategory(e.target.value)}
-                  className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-red-500 focus:outline-none cursor-pointer">
+                  className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-purple-500 focus:outline-none cursor-pointer">
                   {categoryOptions.map(c => (
                     <option key={c} value={c} className="bg-black text-white">{c}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-400">API URL</label>
+                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-400">API URL</label>
                 <input type="text" value={editApiUrl} onChange={e => setEditApiUrl(e.target.value)}
-                  className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-red-500 focus:outline-none"
+                  className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-purple-500 focus:outline-none"
                   placeholder="https://..." />
               </div>
               <div>
@@ -362,7 +362,7 @@ export default function AdminGatesPage() {
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="relative w-full max-w-lg cyber-clip border border-green-500/50 bg-black p-6 shadow-[0_0_30px_rgba(34,197,94,0.2)] matrix-bg">
-            <button onClick={() => setShowCreate(false)} className="absolute right-4 top-4 text-red-500 hover:text-red-400 cursor-pointer">
+            <button onClick={() => setShowCreate(false)} className="absolute right-4 top-4 text-purple-500 hover:text-purple-400 cursor-pointer">
               <X className="h-5 w-5" />
             </button>
             <div className="mb-6 flex items-center gap-3 border-b border-green-900/50 pb-4">
@@ -401,9 +401,9 @@ export default function AdminGatesPage() {
                     className="w-full border border-green-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-green-400 focus:border-green-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-400">Costo Dead</label>
+                  <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-400">Costo Dead</label>
                   <input type="number" value={createDead} onChange={e => setCreateDead(Number(e.target.value))}
-                    className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-red-400 focus:border-red-500 focus:outline-none" />
+                    className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-purple-400 focus:border-purple-500 focus:outline-none" />
                 </div>
               </div>
               <div>

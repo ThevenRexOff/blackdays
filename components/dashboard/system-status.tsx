@@ -50,20 +50,20 @@ const statusConfig = {
 
 export function SystemStatus() {
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-red-900/30 bg-gradient-to-br from-[#0d0d0d] to-[#111111] p-5">
+    <div className="group relative overflow-hidden rounded-lg border border-purple-900/30 bg-gradient-to-br from-[#0d0d0d] to-[#111111] p-5">
       {/* Corner decorations */}
       <div className="absolute left-0 top-0 h-10 w-10">
         <svg viewBox="0 0 40 40" className="h-full w-full">
-          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(220, 38, 38, 0.3)" />
+          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(147, 51, 234, 0.3)" />
         </svg>
       </div>
       
       {/* Top glow line */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
       
       <h3 className="relative mb-4 font-mono text-xs font-bold uppercase tracking-wider text-gray-400">
         Estado del Sistema
-        <div className="absolute -left-5 top-1/2 h-px w-3 -translate-y-1/2 bg-red-500/50" />
+        <div className="absolute -left-5 top-1/2 h-px w-3 -translate-y-1/2 bg-purple-500/50" />
       </h3>
       
       <div className="space-y-2">
@@ -74,13 +74,13 @@ export function SystemStatus() {
           return (
             <div 
               key={item.name} 
-              className="group/item flex items-center justify-between rounded-md border border-transparent p-2 transition-all duration-200 hover:border-red-900/20 hover:bg-red-900/5"
+              className="group/item flex items-center justify-between rounded-md border border-transparent p-2 transition-all duration-200 hover:border-purple-900/20 hover:bg-purple-900/5"
             >
               <div className="flex items-center gap-3">
-                <div className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-red-900/20 bg-[#0a0a0a]">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-purple-900/20 bg-[#0a0a0a]">
                   <Icon className="h-4 w-4 text-gray-500" />
                   {/* Corner accent */}
-                  <div className="absolute -right-px -top-px h-2 w-2 border-r border-t border-red-500/30" />
+                  <div className="absolute -right-px -top-px h-2 w-2 border-r border-t border-purple-500/30" />
                 </div>
                 <div>
                   <p className="font-mono text-xs font-medium text-white">{item.name}</p>
@@ -107,7 +107,7 @@ export function SystemStatus() {
       </div>
       
       {/* Bottom decorative line */}
-      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-red-900/30 to-transparent" />
+      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-900/30 to-transparent" />
     </div>
   )
 }

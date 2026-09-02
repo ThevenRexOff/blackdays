@@ -1,4 +1,4 @@
-# Los Piratas de Trebol — Dashboard
+# JILL CHK — Dashboard
 
 Sistema de verificación de tarjetas con dashboard administrativo. Plataforma web con autenticación, gestión de créditos, múltiples gates de verificación, y panel de administración completo.
 

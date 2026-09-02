@@ -78,7 +78,7 @@ export function DashboardParticles() {
 
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(239, 68, 68, ${p.opacity})`
+        ctx.fillStyle = `rgba(168, 85, 247, ${p.opacity})`
         ctx.fill()
 
         const dx = mouse.x - p.x
@@ -90,7 +90,7 @@ export function DashboardParticles() {
           ctx.beginPath()
           ctx.moveTo(p.x, p.y)
           ctx.lineTo(mouse.x, mouse.y)
-          ctx.strokeStyle = `rgba(239, 68, 68, ${0.08 * (1 - dist / 150)})`
+          ctx.strokeStyle = `rgba(168, 85, 247, ${0.08 * (1 - dist / 150)})`
           ctx.lineWidth = 0.5
           ctx.stroke()
         }
@@ -104,7 +104,7 @@ export function DashboardParticles() {
             ctx.beginPath()
             ctx.moveTo(p.x, p.y)
             ctx.lineTo(p2.x, p2.y)
-            ctx.strokeStyle = `rgba(239, 68, 68, ${0.08 * (1 - dist / connectionDist)})`
+            ctx.strokeStyle = `rgba(168, 85, 247, ${0.08 * (1 - dist / connectionDist)})`
             ctx.lineWidth = 0.5
             ctx.stroke()
           }

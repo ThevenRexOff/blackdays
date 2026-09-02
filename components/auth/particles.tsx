@@ -58,7 +58,7 @@ export function ParticleNetwork() {
 
         c.beginPath()
         c.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        c.fillStyle = `rgba(239, 68, 68, ${p.opacity})`
+        c.fillStyle = `rgba(168, 85, 247, ${p.opacity})`
         c.fill()
 
         const dx = mouse.x - p.x
@@ -70,7 +70,7 @@ export function ParticleNetwork() {
           c.beginPath()
           c.moveTo(p.x, p.y)
           c.lineTo(mouse.x, mouse.y)
-          c.strokeStyle = `rgba(239, 68, 68, ${0.15 * (1 - dist / 200)})`
+          c.strokeStyle = `rgba(168, 85, 247, ${0.15 * (1 - dist / 200)})`
           c.lineWidth = 0.5
           c.stroke()
         }
@@ -84,7 +84,7 @@ export function ParticleNetwork() {
             c.beginPath()
             c.moveTo(p.x, p.y)
             c.lineTo(p2.x, p2.y)
-            c.strokeStyle = `rgba(239, 68, 68, ${0.12 * (1 - dist / connectionDist)})`
+            c.strokeStyle = `rgba(168, 85, 247, ${0.12 * (1 - dist / connectionDist)})`
             c.lineWidth = 0.5
             c.stroke()
           }

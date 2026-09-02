@@ -47,9 +47,9 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="relative overflow-hidden cyber-clip border border-red-500/30 bg-black/80 p-4">
+        <div className="relative overflow-hidden cyber-clip border border-purple-500/30 bg-black/80 p-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 border border-red-500/30 bg-red-950/40"><Shield className="h-6 w-6 text-red-400" /></div>
+            <div className="p-3 border border-purple-500/30 bg-purple-950/40"><Shield className="h-6 w-6 text-purple-400" /></div>
             <div>
               <p className="font-mono-cyber text-[10px] uppercase tracking-widest text-gray-500">Total Gates</p>
               <p className="font-mono-cyber text-3xl font-black text-white">{stats?.totalGates ?? 0}</p>
@@ -67,12 +67,12 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="relative overflow-hidden cyber-clip border border-red-500/30 bg-black/80 p-4">
+        <div className="relative overflow-hidden cyber-clip border border-purple-500/30 bg-black/80 p-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 border border-red-500/30 bg-red-950/40"><XCircle className="h-6 w-6 text-red-500" /></div>
+            <div className="p-3 border border-purple-500/30 bg-purple-950/40"><XCircle className="h-6 w-6 text-purple-500" /></div>
             <div>
               <p className="font-mono-cyber text-[10px] uppercase tracking-widest text-gray-500">Costo Dead</p>
-              <p className="font-mono-cyber text-3xl font-black text-red-500">{stats?.totalCreditsDead ?? 0}</p>
+              <p className="font-mono-cyber text-3xl font-black text-purple-500">{stats?.totalCreditsDead ?? 0}</p>
             </div>
           </div>
         </div>
@@ -91,47 +91,47 @@ export default function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-3">
         {isAdmin && (
           <Link href="/dashboard/admin/gates"
-            className="cyber-clip border border-red-500/30 bg-black/80 p-6 group hover:border-red-500/60 transition-all cursor-pointer">
+            className="cyber-clip border border-purple-500/30 bg-black/80 p-6 group hover:border-purple-500/60 transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <CreditCard className="h-8 w-8 text-red-400" />
+                <CreditCard className="h-8 w-8 text-purple-400" />
                 <div>
                   <h3 className="font-mono-cyber text-sm font-bold text-white uppercase tracking-widest">Gestión de Gates</h3>
                   <p className="font-mono-cyber text-xs text-gray-500 mt-1">Administra costos, estados y estadísticas</p>
                 </div>
               </div>
-              <ArrowRight className="h-5 w-5 text-red-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+              <ArrowRight className="h-5 w-5 text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
             </div>
           </Link>
         )}
 
         {(isAdmin || rank === 'moderador') && (
           <Link href="/dashboard/admin/usuarios"
-            className="cyber-clip border border-red-500/30 bg-black/80 p-6 group hover:border-red-500/60 transition-all cursor-pointer">
+            className="cyber-clip border border-purple-500/30 bg-black/80 p-6 group hover:border-purple-500/60 transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-red-400" />
+                <Users className="h-8 w-8 text-purple-400" />
                 <div>
                   <h3 className="font-mono-cyber text-sm font-bold text-white uppercase tracking-widest">Gestión de Usuarios</h3>
                   <p className="font-mono-cyber text-xs text-gray-500 mt-1">Administra créditos, rangos y membresías</p>
                 </div>
               </div>
-              <ArrowRight className="h-5 w-5 text-red-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+              <ArrowRight className="h-5 w-5 text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
             </div>
           </Link>
         )}
 
         <Link href="/dashboard/admin/keys"
-          className="cyber-clip border border-red-500/30 bg-black/80 p-6 group hover:border-red-500/60 transition-all cursor-pointer">
+          className="cyber-clip border border-purple-500/30 bg-black/80 p-6 group hover:border-purple-500/60 transition-all cursor-pointer">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <KeyRound className="h-8 w-8 text-red-400" />
+              <KeyRound className="h-8 w-8 text-purple-400" />
               <div>
                 <h3 className="font-mono-cyber text-sm font-bold text-white uppercase tracking-widest">Gestión de Keys</h3>
                 <p className="font-mono-cyber text-xs text-gray-500 mt-1">Genera y administra claves de activación</p>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-red-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+            <ArrowRight className="h-5 w-5 text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
           </div>
         </Link>
       </div>

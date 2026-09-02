@@ -241,7 +241,7 @@ export default function GatePage() {
           setInsufficientCredits(false)
           toast.error('Has sido baneado del sistema', {
             duration: 4000,
-            style: { background: '#111', border: '1px solid #ef4444', color: '#f87171' }
+            style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
           })
           stopRef.current = true
           return
@@ -262,7 +262,7 @@ export default function GatePage() {
           setInsufficientCredits(false)
           toast.error('Rango insuficiente para acceder a este gate', {
             duration: 4000,
-            style: { background: '#111', border: '1px solid #ef4444', color: '#f87171' }
+            style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
           })
           stopRef.current = true
           return
@@ -273,7 +273,7 @@ export default function GatePage() {
           setIsRunning(false)
           toast.error('Créditos insuficientes — procesamiento detenido', {
             duration: 4000,
-            style: { background: '#111', border: '1px solid #ef4444', color: '#f87171' }
+            style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
           })
           stopRef.current = true
           return
@@ -284,7 +284,7 @@ export default function GatePage() {
           setInsufficientCredits(false)
           toast.error('Gate deshabilitado — solo administradores pueden procesar', {
             duration: 4000,
-            style: { background: '#111', border: '1px solid #ef4444', color: '#f87171' }
+            style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
           })
           stopRef.current = true
           return
@@ -384,7 +384,7 @@ export default function GatePage() {
     if (!bin.length || bin.length < 6 || bin.length > 16) {
       toast.error('Ingresa un BIN válido', {
         icon: '❌', duration: 3000,
-        style: { background: '#111', border: '1px solid #ef4444', color: '#f87171' }
+        style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
       })
       return
     }
@@ -454,10 +454,10 @@ export default function GatePage() {
 
   if (!gate) {
     return (
-      <div className="flex flex-col items-center justify-center border border-dashed border-red-500/30 bg-red-950/10 py-20 cyber-clip min-h-[500px] matrix-bg">
-        <Terminal className="h-16 w-16 text-red-500/50 mb-4" />
-        <h3 className="font-mono-cyber text-lg font-bold text-red-500 uppercase tracking-widest neon-text-red">ERROR: GATE NO ENCONTRADO</h3>
-        <p className="mt-2 font-mono-cyber text-sm text-red-400/70">&gt; El gate solicitado no existe o el acceso denegado.</p>
+      <div className="flex flex-col items-center justify-center border border-dashed border-purple-500/30 bg-purple-950/10 py-20 cyber-clip min-h-[500px] matrix-bg">
+        <Terminal className="h-16 w-16 text-purple-500/50 mb-4" />
+        <h3 className="font-mono-cyber text-lg font-bold text-purple-500 uppercase tracking-widest neon-text-purple">ERROR: GATE NO ENCONTRADO</h3>
+        <p className="mt-2 font-mono-cyber text-sm text-purple-400/70">&gt; El gate solicitado no existe o el acceso denegado.</p>
       </div>
     )
   }
@@ -465,24 +465,24 @@ export default function GatePage() {
   const progress = totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0
 
   return (
-    <div className="space-y-6 p-6 matrix-bg min-h-screen rounded-xl border border-red-900/30">
+    <div className="space-y-6 p-6 matrix-bg min-h-screen rounded-xl border border-purple-900/30">
 
       {/* ── Header Banner ── */}
-      <div className="relative overflow-hidden cyber-clip border border-red-500/50 bg-black/80">
+      <div className="relative overflow-hidden cyber-clip border border-purple-500/50 bg-black/80">
         <div className="absolute inset-0 bg-[url('/images/gate-banner.jpg')] bg-cover bg-center opacity-30 mix-blend-luminosity" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-red-950/40 to-black/90" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(239,68,68,0.1)_50%)] bg-[length:100%_4px] animate-scan-line" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-purple-950/40 to-black/90" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(168,85,247,0.1)_50%)] bg-[length:100%_4px] animate-scan-line" />
 
         <div className="relative flex flex-col md:flex-row md:items-center justify-between p-8 z-10 gap-6">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            <div className="relative h-32 w-48 cyber-clip border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+            <div className="relative h-32 w-48 cyber-clip border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
               <Image src="/images/gate-banner.jpg" alt="Gate Banner" fill className="object-cover mix-blend-screen filter grayscale opacity-70" />
-              <div className="absolute inset-0 bg-red-500/20 mix-blend-overlay" />
+              <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay" />
             </div>
             <div>
-              <h1 className="text-4xl font-black uppercase tracking-widest text-white neon-text-red">{gate.name}</h1>
-              <p className="mt-1 font-mono-cyber text-xs text-red-400/60">ID: {gate.id}</p>
-              <span className="mt-3 inline-block cyber-clip-alt bg-red-500/20 border border-red-500/50 px-4 py-1.5 text-xs font-mono-cyber font-bold uppercase text-red-400">
+              <h1 className="text-4xl font-black uppercase tracking-widest text-white neon-text-purple">{gate.name}</h1>
+              <p className="mt-1 font-mono-cyber text-xs text-purple-400/60">ID: {gate.id}</p>
+              <span className="mt-3 inline-block cyber-clip-alt bg-purple-500/20 border border-purple-500/50 px-4 py-1.5 text-xs font-mono-cyber font-bold uppercase text-purple-400">
                 &lt;{gate.category}&gt;
               </span>
               <div className="mt-3">
@@ -491,8 +491,8 @@ export default function GatePage() {
                   <span className="flex items-center gap-1 border border-green-500/30 bg-green-950/40 px-2 py-1 rounded text-green-400 whitespace-nowrap">
                     <CheckCircle2 className="h-3 w-3 shrink-0" /><span className="font-bold">{gate.stats.lives}</span> <span className="text-green-500">LIVES</span>
                   </span>
-                  <span className="flex items-center gap-1 border border-red-500/30 bg-red-950/40 px-2 py-1 rounded text-red-400 whitespace-nowrap">
-                    <XCircle className="h-3 w-3 shrink-0" /><span className="font-bold">{gate.stats.deads}</span> <span className="text-red-500">DEADS</span>
+                  <span className="flex items-center gap-1 border border-purple-500/30 bg-purple-950/40 px-2 py-1 rounded text-purple-400 whitespace-nowrap">
+                    <XCircle className="h-3 w-3 shrink-0" /><span className="font-bold">{gate.stats.deads}</span> <span className="text-purple-500">DEADS</span>
                   </span>
                   <span className="flex items-center gap-1 border border-gray-600 bg-gray-800/60 px-2 py-1 rounded text-gray-400 whitespace-nowrap">
                     <Activity className="h-3 w-3 shrink-0" /><span className="font-bold">{gate.stats.total}</span> <span className="text-gray-500">TOTAL</span>
@@ -505,7 +505,7 @@ export default function GatePage() {
                     }`}>
                     <span className="font-bold">{gate.stats.successRate}%</span> <span className="opacity-70">RATE</span>
                   </span>
-                  <span className={`flex items-center gap-1 px-2 py-1 rounded whitespace-nowrap border ${gate.minRank === 'admin' ? 'text-red-400 border-red-500/30 bg-red-950/30' :
+                  <span className={`flex items-center gap-1 px-2 py-1 rounded whitespace-nowrap border ${gate.minRank === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-950/30' :
                     gate.minRank === 'moderador' ? 'text-purple-400 border-purple-500/30 bg-purple-950/30' :
                       gate.minRank === 'seller' ? 'text-blue-400 border-blue-500/30 bg-blue-950/30' :
                         gate.minRank === 'vip' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-950/30' :
@@ -518,18 +518,18 @@ export default function GatePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 cyber-clip-alt border border-red-500/50 bg-black/80 px-6 py-4 backdrop-blur-md shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+          <div className="flex items-center gap-4 cyber-clip-alt border border-purple-500/50 bg-black/80 px-6 py-4 backdrop-blur-md shadow-[0_0_15px_rgba(168,85,247,0.2)]">
             <div>
               <p className="font-bold text-white uppercase tracking-wider text-sm">Information</p>
-              <p className="flex items-center gap-1 font-mono-cyber text-sm font-bold text-red-400 mt-1">
+              <p className="flex items-center gap-1 font-mono-cyber text-sm font-bold text-purple-400 mt-1">
                 <Zap className="h-3 w-3" />{userCredits}
               </p>
               <div className="mt-2 flex items-center gap-2 font-mono-cyber text-[10px]">
                 <span className="flex items-center gap-1.5 text-green-400 border border-green-500/30 bg-green-950/40 px-2 py-1">
                   <Zap className="h-3 w-3" />{gate.creditsLive} <span className="text-green-600">/ LIVE</span>
                 </span>
-                <span className="flex items-center gap-1.5 text-red-400 border border-red-500/30 bg-red-950/40 px-2 py-1">
-                  <Zap className="h-3 w-3" />{gate.creditsDead} <span className="text-red-700">/ DEAD</span>
+                <span className="flex items-center gap-1.5 text-purple-400 border border-purple-500/30 bg-purple-950/40 px-2 py-1">
+                  <Zap className="h-3 w-3" />{gate.creditsDead} <span className="text-purple-700">/ DEAD</span>
                 </span>
               </div>
               <div className="mt-2 font-mono-cyber text-[10px]">
@@ -560,11 +560,11 @@ export default function GatePage() {
         </div>
 
         {/* Dead */}
-        <div className="relative overflow-hidden cyber-clip border border-red-500/30 bg-black/80 p-4">
+        <div className="relative overflow-hidden cyber-clip border border-purple-500/30 bg-black/80 p-4">
           <div className="flex flex-col items-center">
-            <div className="mb-2 cyber-clip-alt border border-red-500/30 bg-red-950/40 p-2"><XCircle className="h-5 w-5 text-red-500" /></div>
-            <span className="font-mono-cyber text-3xl font-black text-red-500">{deadResults.length}</span>
-            <span className="font-mono-cyber text-[10px] uppercase tracking-widest text-red-700 mt-1">DEAD</span>
+            <div className="mb-2 cyber-clip-alt border border-purple-500/30 bg-purple-950/40 p-2"><XCircle className="h-5 w-5 text-purple-500" /></div>
+            <span className="font-mono-cyber text-3xl font-black text-purple-500">{deadResults.length}</span>
+            <span className="font-mono-cyber text-[10px] uppercase tracking-widest text-purple-700 mt-1">DEAD</span>
           </div>
         </div>
 
@@ -589,15 +589,15 @@ export default function GatePage() {
 
       {/* ── Input + Shopify URL ── */}
       <div className="space-y-4">
-        <div className="relative overflow-hidden cyber-clip border border-red-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(239,68,68,0.1)]">
-          <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-red-400">
+        <div className="relative overflow-hidden cyber-clip border border-purple-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(168,85,247,0.1)]">
+          <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400">
             <Terminal className="h-3 w-3" /> ENTRADA DE DATOS
           </label>
           <textarea
             value={cards}
             onChange={(e) => setCards(e.target.value)}
             placeholder="> Ingresa las tarjetas aquí... (una por línea: número|mm|yy|cvv)"
-            className="h-24 w-full resize-none bg-black/50 px-3 py-2 font-mono-cyber text-sm text-red-400 placeholder-red-900/50 focus:border-red-400 focus:outline-none border border-red-900/50"
+            className="h-24 w-full resize-none bg-black/50 px-3 py-2 font-mono-cyber text-sm text-purple-400 placeholder-purple-900/50 focus:border-purple-400 focus:outline-none border border-purple-900/50"
           />
         </div>
 
@@ -651,7 +651,7 @@ export default function GatePage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 border-t border-orange-900/30 pt-2">
-                  <span className={`font-mono-cyber text-[10px] px-2 py-0.5 border ${shopifyConfig.sendAddress ? 'border-blue-500/40 text-blue-400' : 'border-red-500/40 text-red-400'}`}>
+                  <span className={`font-mono-cyber text-[10px] px-2 py-0.5 border ${shopifyConfig.sendAddress ? 'border-blue-500/40 text-blue-400' : 'border-purple-500/40 text-purple-400'}`}>
                     {shopifyConfig.sendAddress ? 'ENVIAR DIRECCIÓN' : 'SIN DIRECCION'}
                   </span>
                   {shopifyConfig.sendAddress && (
@@ -673,7 +673,7 @@ export default function GatePage() {
       {/* ── Action Buttons ── */}
       <div className="flex flex-col md:flex-row gap-4">
         <button onClick={handleStart} disabled={isRunning || insufficientCredits || !gate.apiUrl}
-          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-red-950/40 border border-red-500/50 px-6 py-4 font-mono-cyber font-bold text-red-400 transition-all hover:bg-red-600 hover:text-white hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-purple-950/40 border border-purple-500/50 px-6 py-4 font-mono-cyber font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
           <Play className="h-5 w-5" /> INICIAR
         </button>
         <button onClick={handleStop} disabled={!isRunning}
@@ -681,17 +681,17 @@ export default function GatePage() {
           <Square className="h-5 w-5" /> DETENER
         </button>
         <button onClick={() => setShowGenModal(true)}
-          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 border border-red-400 px-6 py-4 font-mono-cyber font-bold text-white transition-all hover:from-red-500 hover:to-orange-500 hover:shadow-[0_0_25px_rgba(239,68,68,0.7)] cursor-pointer">
+          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-orange-600 border border-purple-400 px-6 py-4 font-mono-cyber font-bold text-white transition-all hover:from-purple-500 hover:to-orange-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] cursor-pointer">
           <Sparkles className="h-5 w-5 animate-pulse" /> GENERAR TARJETAS
         </button>
       </div>
 
       {/* ── Gate deshabilitado Warning ── */}
       {!gate.isActive && (
-        <div className="cyber-clip border border-red-500/50 bg-red-950/30 p-4">
+        <div className="cyber-clip border border-purple-500/50 bg-purple-950/30 p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-            <p className="font-mono-cyber text-sm text-red-400">
+            <AlertTriangle className="h-5 w-5 text-purple-500 shrink-0" />
+            <p className="font-mono-cyber text-sm text-purple-400">
               GATE DESHABILITADO — Este gate está desactivado. Solo administradores pueden procesar tarjetas aquí.
             </p>
           </div>
@@ -712,10 +712,10 @@ export default function GatePage() {
 
       {/* ── Insufficient Credits Warning ── */}
       {insufficientCredits && (
-        <div className="cyber-clip border border-red-500/50 bg-red-950/30 p-4">
+        <div className="cyber-clip border border-purple-500/50 bg-purple-950/30 p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-            <p className="font-mono-cyber text-sm text-red-400">
+            <AlertTriangle className="h-5 w-5 text-purple-500 shrink-0" />
+            <p className="font-mono-cyber text-sm text-purple-400">
               CRÉDITOS INSUFICIENTES — Neitas al menos {Math.min(gate.creditsLive, gate.creditsDead)} crédito(s) para operar.
             </p>
           </div>
@@ -724,21 +724,21 @@ export default function GatePage() {
 
       {/* ── Progress Bar ── */}
       {totalCount > 0 && (
-        <div className="cyber-clip border border-red-500/50 bg-black/90 p-4">
+        <div className="cyber-clip border border-purple-500/50 bg-black/90 p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="font-mono-cyber text-xs font-bold text-red-400 uppercase tracking-widest">
+            <span className="font-mono-cyber text-xs font-bold text-purple-400 uppercase tracking-widest">
               {isRunning ? 'PROCESANDO...' : 'COMPLETADO'}
             </span>
             <span className="font-mono-cyber text-sm font-black text-white">{processedCount}/{totalCount} — {progress}%</span>
           </div>
-          <div className="h-2 w-full bg-gray-900 border border-red-900/50 p-0.5">
-            <div className="h-full bg-red-500 transition-all duration-300 relative" style={{ width: `${progress}%` }}>
+          <div className="h-2 w-full bg-gray-900 border border-purple-900/50 p-0.5">
+            <div className="h-full bg-purple-500 transition-all duration-300 relative" style={{ width: `${progress}%` }}>
               {isRunning && <div className="absolute top-0 right-0 bottom-0 w-8 bg-white/50 animate-pulse" />}
             </div>
           </div>
           <div className="mt-2 flex gap-4 font-mono-cyber text-[10px]">
             <span className="text-green-400">✓ LIVE: {liveResults.length}</span>
-            <span className="text-red-500">✗ DEAD: {deadResults.length}</span>
+            <span className="text-purple-500">✗ DEAD: {deadResults.length}</span>
             <span className="text-gray-600">CR: {userCredits}</span>
             <span className="text-gray-600">PENDIENTE: {totalCount - processedCount}</span>
           </div>
@@ -760,7 +760,7 @@ export default function GatePage() {
                   <button onClick={copyAllLive} className="p-1 text-green-600 hover:text-green-400 cursor-pointer" title="Copiar todas">
                     <Copy className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={removeAllLive} className="p-1 text-red-700 hover:text-red-400 cursor-pointer" title="Eliminar todas">
+                  <button onClick={removeAllLive} className="p-1 text-purple-700 hover:text-purple-400 cursor-pointer" title="Eliminar todas">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </>
@@ -782,7 +782,7 @@ export default function GatePage() {
                   <button onClick={() => copyToClipboard(r.card)} className="p-0.5 text-green-600 hover:text-green-400 cursor-pointer" title="Copiar">
                     <Copy className="h-3 w-3" />
                   </button>
-                  <button onClick={() => removeLive(i)} className="p-0.5 text-red-700 hover:text-red-400 cursor-pointer" title="Eliminar">
+                  <button onClick={() => removeLive(i)} className="p-0.5 text-purple-700 hover:text-purple-400 cursor-pointer" title="Eliminar">
                     <Trash2 className="h-3 w-3" />
                   </button>
                 </div>
@@ -793,45 +793,45 @@ export default function GatePage() {
         </div>
 
         {/* DEAD Panel */}
-        <div className="cyber-clip border border-red-500/40 bg-black/90 flex flex-col" style={{ minHeight: '320px' }}>
-          <div className="flex items-center justify-between border-b border-red-900/50 px-5 py-3">
+        <div className="cyber-clip border border-purple-500/40 bg-black/90 flex flex-col" style={{ minHeight: '320px' }}>
+          <div className="flex items-center justify-between border-b border-purple-900/50 px-5 py-3">
             <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-red-500" />
-              <h3 className="font-mono-cyber text-xs font-bold text-red-400 uppercase tracking-widest">RECHAZADAS — DEAD</h3>
+              <XCircle className="h-5 w-5 text-purple-500" />
+              <h3 className="font-mono-cyber text-xs font-bold text-purple-400 uppercase tracking-widest">RECHAZADAS — DEAD</h3>
             </div>
             <div className="flex items-center gap-2">
               {deadResults.length > 0 && (
                 <>
-                  <button onClick={copyAllDead} className="p-1 text-red-600 hover:text-red-400 cursor-pointer" title="Copiar todas">
+                  <button onClick={copyAllDead} className="p-1 text-purple-600 hover:text-purple-400 cursor-pointer" title="Copiar todas">
                     <Copy className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={removeAllDead} className="p-1 text-red-700 hover:text-red-400 cursor-pointer" title="Eliminar todas">
+                  <button onClick={removeAllDead} className="p-1 text-purple-700 hover:text-purple-400 cursor-pointer" title="Eliminar todas">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </>
               )}
-              <span className="font-mono-cyber text-lg font-black text-red-500">{deadResults.length}</span>
+              <span className="font-mono-cyber text-lg font-black text-purple-500">{deadResults.length}</span>
             </div>
           </div>
           <div ref={deadRef} className="flex-1 overflow-y-auto p-3 space-y-1.5" style={{ maxHeight: '260px' }}>
             {deadResults.length === 0 ? (
               <div className="flex h-full items-center justify-center">
-                <p className="font-mono-cyber text-xs text-red-900 uppercase tracking-widest">Esperando resultados...</p>
+                <p className="font-mono-cyber text-xs text-purple-900 uppercase tracking-widest">Esperando resultados...</p>
               </div>
             ) : deadResults.map((r, i) => (
-              <div key={i} className="flex flex-col gap-0.5 border border-red-900/40 bg-red-950/20 px-2 py-1.5 cyber-clip-alt group hover:border-red-500/60 transition-colors">
+              <div key={i} className="flex flex-col gap-0.5 border border-purple-900/40 bg-purple-950/20 px-2 py-1.5 cyber-clip-alt group hover:border-purple-500/60 transition-colors">
                 <div className="flex items-center gap-1">
-                  <XCircle className="h-3 w-3 text-red-500 shrink-0" />
-                  <span className="flex-1 font-mono-cyber text-xs text-red-300 break-all min-w-0">{r.card}</span>
-                  {r.time_taken !== undefined && <span className="font-mono-cyber text-[9px] text-red-700 shrink-0">{r.time_taken}ms</span>}
-                  <button onClick={() => copyToClipboard(r.card)} className="p-0.5 text-red-600 hover:text-red-400 cursor-pointer" title="Copiar">
+                  <XCircle className="h-3 w-3 text-purple-500 shrink-0" />
+                  <span className="flex-1 font-mono-cyber text-xs text-purple-300 break-all min-w-0">{r.card}</span>
+                  {r.time_taken !== undefined && <span className="font-mono-cyber text-[9px] text-purple-700 shrink-0">{r.time_taken}ms</span>}
+                  <button onClick={() => copyToClipboard(r.card)} className="p-0.5 text-purple-600 hover:text-purple-400 cursor-pointer" title="Copiar">
                     <Copy className="h-3 w-3" />
                   </button>
-                  <button onClick={() => removeDead(i)} className="p-0.5 text-red-700 hover:text-red-400 cursor-pointer" title="Eliminar">
+                  <button onClick={() => removeDead(i)} className="p-0.5 text-purple-700 hover:text-purple-400 cursor-pointer" title="Eliminar">
                     <Trash2 className="h-3 w-3" />
                   </button>
                 </div>
-                {r.response && <span className="font-mono-cyber text-[10px] text-red-500 break-all pl-5">{r.response}</span>}
+                {r.response && <span className="font-mono-cyber text-[10px] text-purple-500 break-all pl-5">{r.response}</span>}
               </div>
             ))}
           </div>
@@ -870,7 +870,7 @@ export default function GatePage() {
                   </button>
                 </div>
                 {shopifyError && (
-                  <p className="mt-2 font-mono-cyber text-[10px] text-red-400">{shopifyError}</p>
+                  <p className="mt-2 font-mono-cyber text-[10px] text-purple-400">{shopifyError}</p>
                 )}
               </div>
 
@@ -1034,7 +1034,7 @@ export default function GatePage() {
                   </p>
                   <p className="font-mono-cyber text-[10px] text-blue-700 mt-0.5">
                     Si marcas esta opción se enviarán los datos de residencia al gate.
-                    Si no, se enviará <span className="text-red-400">"false"</span>.
+                    Si no, se enviará <span className="text-purple-400">"false"</span>.
                   </p>
                 </div>
               </label>
@@ -1137,7 +1137,7 @@ export default function GatePage() {
                 </div>
                 <div className="flex items-center justify-between font-mono-cyber text-sm mt-2">
                   <span className="text-gray-400">Costo máximo estimado:</span>
-                  <span className="font-bold text-red-400">{creditWarningData.worstCase}</span>
+                  <span className="font-bold text-purple-400">{creditWarningData.worstCase}</span>
                 </div>
               </div>
               <p className="font-mono-cyber text-xs text-gray-500">
@@ -1164,20 +1164,20 @@ export default function GatePage() {
       {/* ── Gen Data Modal ── */}
       {showGenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-md cyber-clip border border-red-500/50 bg-black p-6 shadow-[0_0_30px_rgba(239,68,68,0.3)] matrix-bg">
-            <button onClick={() => setShowGenModal(false)} className="absolute right-4 top-4 text-red-500 hover:text-red-400">
+          <div className="relative w-full max-w-md cyber-clip border border-purple-500/50 bg-black p-6 shadow-[0_0_30px_rgba(168,85,247,0.3)] matrix-bg">
+            <button onClick={() => setShowGenModal(false)} className="absolute right-4 top-4 text-purple-500 hover:text-purple-400">
               <X className="h-5 w-5" />
             </button>
-            <div className="mb-6 flex items-center gap-3 border-b border-red-900/50 pb-4">
-              <Sparkles className="h-6 w-6 text-red-500 animate-pulse" />
-              <h2 className="font-mono-cyber text-lg font-bold text-white uppercase tracking-widest neon-text-red">GENERADOR DE DATOS</h2>
+            <div className="mb-6 flex items-center gap-3 border-b border-purple-900/50 pb-4">
+              <Sparkles className="h-6 w-6 text-purple-500 animate-pulse" />
+              <h2 className="font-mono-cyber text-lg font-bold text-white uppercase tracking-widest neon-text-purple">GENERADOR DE DATOS</h2>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-red-500">BIN</label>
+                <label className="mb-1 block font-mono-cyber text-[10px] uppercase text-purple-500">BIN</label>
                 <input type="text" value={genData.bin} onChange={(e) => setGenData({ ...genData, bin: e.target.value.replace(/[^0-9]/g, '').slice(0, 16) })}
-                  className="w-full border border-red-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-red-500 focus:outline-none"
+                  className="w-full border border-purple-900/50 bg-black/50 px-3 py-2 font-mono-cyber text-sm text-white focus:border-purple-500 focus:outline-none"
                   placeholder="Ej. 451234" />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1221,7 +1221,7 @@ export default function GatePage() {
             </div>
             <div className="mt-8 flex gap-3">
               <button onClick={handleExecuteGen}
-                className="flex-1 cyber-clip-alt border border-red-500/50 bg-red-950/40 px-4 py-2 font-mono-cyber text-sm font-bold text-red-400 transition-all hover:bg-red-600 hover:text-white cursor-pointer">
+                className="flex-1 cyber-clip-alt border border-purple-500/50 bg-purple-950/40 px-4 py-2 font-mono-cyber text-sm font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white cursor-pointer">
                 GENERAR
               </button>
               <button onClick={() => setShowGenModal(false)}

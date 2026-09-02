@@ -437,7 +437,7 @@ export default function TempMailPage() {
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="h-8 w-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -447,23 +447,23 @@ export default function TempMailPage() {
   const cfg = serviceConfig[selectedService]
 
   return (
-    <div className="space-y-6 matrix-bg min-h-screen rounded-xl border border-red-900/30 p-6">
+    <div className="space-y-6 matrix-bg min-h-screen rounded-xl border border-purple-900/30 p-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-red-500/20 pb-6 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-purple-500/20 pb-6 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Mail className="h-10 w-10 text-red-500 animate-pulse-glow" />
-            <h1 className="text-4xl font-black uppercase tracking-widest text-white neon-text-red">
+            <Mail className="h-10 w-10 text-purple-500 animate-pulse-glow" />
+            <h1 className="text-4xl font-black uppercase tracking-widest text-white neon-text-purple">
               TEMP MAIL
             </h1>
           </div>
-          <p className="mt-2 font-mono-cyber text-sm text-red-500/80 uppercase">
+          <p className="mt-2 font-mono-cyber text-sm text-purple-500/80 uppercase">
             &gt; Correo temporal con selección de dominio
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="font-mono-cyber text-[10px] uppercase tracking-widest text-gray-500">RANGO:</span>
-          <span className="font-mono-cyber text-xs font-bold text-red-400 border border-red-500/30 bg-red-950/30 px-2 py-0.5">
+          <span className="font-mono-cyber text-xs font-bold text-purple-400 border border-purple-500/30 bg-purple-950/30 px-2 py-0.5">
             {rank?.toUpperCase()}
           </span>
         </div>
@@ -482,8 +482,8 @@ export default function TempMailPage() {
                 onClick={() => { setSelectedService(svc); resetAll() }}
                 className={`flex flex-col gap-1 px-4 py-3 text-left transition-all duration-300 border cursor-pointer ${
                   active
-                    ? `${c.border} bg-gradient-to-br from-red-950/50 to-black shadow-[0_0_20px_rgba(239,68,68,0.15)]`
-                    : 'border-gray-800 bg-black/60 hover:border-red-900/50'
+                    ? `${c.border} bg-gradient-to-br from-purple-950/50 to-black shadow-[0_0_20px_rgba(168,85,247,0.15)]`
+                    : 'border-gray-800 bg-black/60 hover:border-purple-900/50'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -514,7 +514,7 @@ export default function TempMailPage() {
                 value={selectedDomain}
                 onChange={(e) => setSelectedDomain(e.target.value)}
                 disabled={loadingDomains || !!account}
-                className="w-full sm:w-64 bg-black border border-gray-700 text-gray-300 font-mono-cyber text-xs px-3 py-2.5 focus:outline-none focus:border-red-500/50 disabled:opacity-50"
+                className="w-full sm:w-64 bg-black border border-gray-700 text-gray-300 font-mono-cyber text-xs px-3 py-2.5 focus:outline-none focus:border-purple-500/50 disabled:opacity-50"
               >
                 {loadingDomains ? (
                   <option>Cargando dominios...</option>
@@ -531,7 +531,7 @@ export default function TempMailPage() {
               <button
                 onClick={() => loadDomains(selectedService)}
                 disabled={loadingDomains || !!account}
-                className="border border-gray-700 bg-black/50 px-3 py-2.5 text-gray-400 hover:text-red-400 transition-colors cursor-pointer disabled:opacity-50"
+                className="border border-gray-700 bg-black/50 px-3 py-2.5 text-gray-400 hover:text-purple-400 transition-colors cursor-pointer disabled:opacity-50"
                 title="Refrescar dominios"
               >
                 <RefreshCw className={`h-4 w-4 ${loadingDomains ? 'animate-spin' : ''}`} />
@@ -543,7 +543,7 @@ export default function TempMailPage() {
         <button
           onClick={generateEmail}
           disabled={generating || (!selectedDomain && selectedService === 'mailtm')}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-mono-cyber text-sm font-bold uppercase px-6 py-2.5 transition-all duration-200 shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] cursor-pointer"
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-mono-cyber text-sm font-bold uppercase px-6 py-2.5 transition-all duration-200 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] cursor-pointer"
         >
           {generating ? (
             <RefreshCw className="h-4 w-4 animate-spin" />
@@ -556,7 +556,7 @@ export default function TempMailPage() {
         {account && (
           <button
             onClick={resetAll}
-            className="flex items-center gap-2 border border-gray-700 bg-black/50 hover:border-red-900/50 text-gray-500 hover:text-red-400 font-mono-cyber text-xs uppercase px-4 py-2.5 transition-all duration-200 cursor-pointer"
+            className="flex items-center gap-2 border border-gray-700 bg-black/50 hover:border-purple-900/50 text-gray-500 hover:text-purple-400 font-mono-cyber text-xs uppercase px-4 py-2.5 transition-all duration-200 cursor-pointer"
           >
             <Trash2 className="h-3 w-3" />
             Limpiar
@@ -569,7 +569,7 @@ export default function TempMailPage() {
         <div className="space-y-4">
           {/* Email card */}
           <div className={`border ${cfg.border} bg-black/80 p-4 relative overflow-hidden`}>
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/60 to-transparent" />
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-1 min-w-0">
                 <p className="font-mono-cyber text-[10px] uppercase tracking-widest text-gray-500 mb-1">
@@ -585,7 +585,7 @@ export default function TempMailPage() {
                 </span>
                 <button
                   onClick={copyEmail}
-                  className="flex items-center gap-1.5 border border-gray-700 hover:border-red-500/50 bg-black/50 px-3 py-1.5 text-xs font-mono-cyber text-gray-400 hover:text-white transition-all duration-200 cursor-pointer"
+                  className="flex items-center gap-1.5 border border-gray-700 hover:border-purple-500/50 bg-black/50 px-3 py-1.5 text-xs font-mono-cyber text-gray-400 hover:text-white transition-all duration-200 cursor-pointer"
                 >
                   {copied ? (
                     <CheckCircle2 className="h-3 w-3 text-green-400" />
@@ -597,7 +597,7 @@ export default function TempMailPage() {
                 <button
                   onClick={() => fetchInbox(account)}
                   disabled={refreshing}
-                  className="flex items-center gap-1.5 border border-red-900/40 hover:border-red-500/50 bg-red-950/20 px-3 py-1.5 text-xs font-mono-cyber text-red-400 hover:text-red-300 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                  className="flex items-center gap-1.5 border border-purple-900/40 hover:border-purple-500/50 bg-purple-950/20 px-3 py-1.5 text-xs font-mono-cyber text-purple-400 hover:text-purple-300 transition-all duration-200 cursor-pointer disabled:opacity-50"
                 >
                   <RefreshCw className={`h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
                   ACTUALIZAR
@@ -633,8 +633,8 @@ export default function TempMailPage() {
             <div className="border border-gray-800 bg-black/60 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-[#0a0a0f]">
                 <div className="flex items-center gap-2">
-                  <Inbox className="h-4 w-4 text-red-400" />
-                  <span className="font-mono-cyber text-xs font-bold uppercase text-red-400">Bandeja de Entrada</span>
+                  <Inbox className="h-4 w-4 text-purple-400" />
+                  <span className="font-mono-cyber text-xs font-bold uppercase text-purple-400">Bandeja de Entrada</span>
                 </div>
                 <span className="font-mono-cyber text-[10px] text-gray-500">
                   {messages.length} {messages.length === 1 ? 'mensaje' : 'mensajes'}
@@ -651,7 +651,7 @@ export default function TempMailPage() {
                   <button
                     onClick={() => fetchInbox(account)}
                     disabled={refreshing}
-                    className="mt-4 flex items-center gap-1.5 border border-red-900/30 bg-red-950/10 px-4 py-2 text-[10px] font-mono-cyber text-red-400/70 hover:text-red-400 transition-colors cursor-pointer disabled:opacity-50"
+                    className="mt-4 flex items-center gap-1.5 border border-purple-900/30 bg-purple-950/10 px-4 py-2 text-[10px] font-mono-cyber text-purple-400/70 hover:text-purple-400 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <RefreshCw className={`h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
                     Verificar correos
@@ -663,11 +663,11 @@ export default function TempMailPage() {
                     <button
                       key={msg.id}
                       onClick={() => readMessage(msg)}
-                      className={`w-full text-left px-4 py-3 hover:bg-red-950/10 transition-all duration-200 cursor-pointer group flex items-start gap-3 ${
-                        selectedMsg?.id === msg.id ? 'bg-red-950/20 border-l-2 border-red-500' : 'border-l-2 border-transparent'
+                      className={`w-full text-left px-4 py-3 hover:bg-purple-950/10 transition-all duration-200 cursor-pointer group flex items-start gap-3 ${
+                        selectedMsg?.id === msg.id ? 'bg-purple-950/20 border-l-2 border-purple-500' : 'border-l-2 border-transparent'
                       }`}
                     >
-                      <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${msg.seen === false ? 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]' : 'bg-gray-700'}`} />
+                      <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${msg.seen === false ? 'bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.8)]' : 'bg-gray-700'}`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-mono-cyber text-xs text-white truncate">
@@ -687,7 +687,7 @@ export default function TempMailPage() {
                           </p>
                         )}
                       </div>
-                      <ChevronRight className="h-3 w-3 text-gray-700 group-hover:text-red-400 shrink-0 mt-1 transition-colors" />
+                      <ChevronRight className="h-3 w-3 text-gray-700 group-hover:text-purple-400 shrink-0 mt-1 transition-colors" />
                     </button>
                   ))}
                 </div>
@@ -697,8 +697,8 @@ export default function TempMailPage() {
             {/* Message reader */}
             <div className="border border-gray-800 bg-black/60 overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-800 bg-[#0a0a0f]">
-                <Eye className="h-4 w-4 text-red-400" />
-                <span className="font-mono-cyber text-xs font-bold uppercase text-red-400">Lector de Correo</span>
+                <Eye className="h-4 w-4 text-purple-400" />
+                <span className="font-mono-cyber text-xs font-bold uppercase text-purple-400">Lector de Correo</span>
               </div>
 
               {!selectedMsg ? (
@@ -711,13 +711,13 @@ export default function TempMailPage() {
                 </div>
               ) : loadingMsg ? (
                 <div className="flex items-center justify-center py-16">
-                  <RefreshCw className="h-6 w-6 text-red-500 animate-spin" />
+                  <RefreshCw className="h-6 w-6 text-purple-500 animate-spin" />
                 </div>
               ) : fullMsg ? (
                 <div className="p-4 space-y-3 max-h-[450px] overflow-y-auto">
                   <button
                     onClick={() => { setSelectedMsg(null); setFullMsg(null) }}
-                    className="flex items-center gap-1.5 text-[10px] font-mono-cyber text-gray-500 hover:text-red-400 transition-colors cursor-pointer mb-2"
+                    className="flex items-center gap-1.5 text-[10px] font-mono-cyber text-gray-500 hover:text-purple-400 transition-colors cursor-pointer mb-2"
                   >
                     <ArrowLeft className="h-3 w-3" />
                     Volver

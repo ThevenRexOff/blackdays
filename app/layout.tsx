@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Los Piratas de Trebol - Dashboard',
-  description: 'CC Checker Los Piratas de Trebol',
+  title: 'JILL CHK - Dashboard',
+  description: 'CC Checker JILL CHK',
   icons: {
     icon: [
       {

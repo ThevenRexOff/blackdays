@@ -155,23 +155,23 @@ export default function AdminUsuariosPage() {
         )}
       </div>
 
-      <div className="overflow-x-auto cyber-clip border border-red-500/30 bg-black/90">
+      <div className="overflow-x-auto cyber-clip border border-purple-500/30 bg-black/90">
         <table className="w-full text-left font-mono-cyber text-xs">
           <thead>
-            <tr className="border-b border-red-900/50 bg-red-950/20">
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Usuario</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Telegram</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Rango</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Créditos</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">L/D</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Membresía</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Registro</th>
-              <th className="px-4 py-3 text-red-400 uppercase tracking-widest">Acciones</th>
+            <tr className="border-b border-purple-900/50 bg-purple-950/20">
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Usuario</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Telegram</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Rango</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Créditos</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">L/D</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Membresía</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Registro</th>
+              <th className="px-4 py-3 text-purple-400 uppercase tracking-widest">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((user) => (
-              <tr key={user.id} className="border-b border-gray-800 hover:bg-red-950/10 transition-colors">
+              <tr key={user.id} className="border-b border-gray-800 hover:bg-purple-950/10 transition-colors">
                 <td className="px-4 py-3">
                   <p className="font-bold text-white">{user.username}</p>
                   <p className="text-[9px] text-gray-600 mt-0.5">{user.id.slice(0, 12)}...</p>
@@ -202,11 +202,11 @@ export default function AdminUsuariosPage() {
                     </select>
                   ) : (
                     <span className={`uppercase font-bold text-[10px] ${
-                      user.rank === 'admin' ? 'text-red-400' :
+                      user.rank === 'admin' ? 'text-purple-400' :
                       user.rank === 'moderador' ? 'text-purple-400' :
                       user.rank === 'seller' ? 'text-blue-400' :
                       user.rank === 'vip' ? 'text-yellow-400' :
-                      user.rank === 'baneado' ? 'text-red-600 line-through' :
+                      user.rank === 'baneado' ? 'text-purple-600 line-through' :
                       'text-green-400'
                     }`}>
                       {user.rank === 'admin' ? <><Shield className="h-3 w-3 inline mr-1" />{user.rank}</> : user.rank}
@@ -224,7 +224,7 @@ export default function AdminUsuariosPage() {
                 <td className="px-4 py-3">
                   <span className="text-green-500">{user.lives}</span>
                   <span className="text-gray-600">/</span>
-                  <span className="text-red-500">{user.deads}</span>
+                  <span className="text-purple-500">{user.deads}</span>
                 </td>
                 <td className="px-4 py-3">
                   {editId === user.id ? (
@@ -259,12 +259,12 @@ export default function AdminUsuariosPage() {
                             <UserCog className="h-3 w-3" /> Editar
                           </button>
                           <button onClick={() => toggleBan(user)}
-                            className="flex items-center gap-1 border border-red-500/50 bg-red-950/40 px-3 py-1 text-red-400 hover:bg-red-600 hover:text-white transition-all cursor-pointer text-[10px] font-bold uppercase">
+                            className="flex items-center gap-1 border border-purple-500/50 bg-purple-950/40 px-3 py-1 text-purple-400 hover:bg-purple-600 hover:text-white transition-all cursor-pointer text-[10px] font-bold uppercase">
                             {user.rank === 'baneado' ? <><RotateCcw className="h-3 w-3" /></> : <><Ban className="h-3 w-3" /></>}
                           </button>
                           {isAdmin && (
                             <button onClick={() => deleteUser(user)}
-                              className="flex items-center gap-1 border border-red-500/50 bg-red-950/40 px-3 py-1 text-red-400 hover:bg-red-600 hover:text-white transition-all cursor-pointer text-[10px] font-bold uppercase">
+                              className="flex items-center gap-1 border border-purple-500/50 bg-purple-950/40 px-3 py-1 text-purple-400 hover:bg-purple-600 hover:text-white transition-all cursor-pointer text-[10px] font-bold uppercase">
                               <Trash2 className="h-3 w-3" />
                             </button>
                           )}
@@ -285,7 +285,7 @@ export default function AdminUsuariosPage() {
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="relative w-full max-w-lg cyber-clip border border-green-500/50 bg-black p-6 shadow-[0_0_30px_rgba(34,197,94,0.2)] matrix-bg">
-            <button onClick={() => setShowCreate(false)} className="absolute right-4 top-4 text-red-500 hover:text-red-400 cursor-pointer">
+            <button onClick={() => setShowCreate(false)} className="absolute right-4 top-4 text-purple-500 hover:text-purple-400 cursor-pointer">
               <X className="h-5 w-5" />
             </button>
             <div className="mb-6 flex items-center gap-3 border-b border-green-900/50 pb-4">

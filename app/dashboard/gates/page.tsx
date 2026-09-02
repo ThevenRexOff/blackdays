@@ -28,11 +28,11 @@ interface Gate {
 const categoryConfig = {
   auth: {
     icon: ShieldCheck,
-    color: 'from-red-600 to-red-900',
-    border: 'border-red-500/50',
-    text: 'text-red-400',
-    bg: 'bg-red-500/10',
-    hoverBorder: 'neon-border-red'
+    color: 'from-purple-600 to-purple-900',
+    border: 'border-purple-500/50',
+    text: 'text-purple-400',
+    bg: 'bg-purple-500/10',
+    hoverBorder: 'neon-border-purple'
   },
   charged: {
     icon: CreditCard,
@@ -40,7 +40,7 @@ const categoryConfig = {
     border: 'border-orange-500/50',
     text: 'text-orange-400',
     bg: 'bg-orange-500/10',
-    hoverBorder: 'neon-border-red'
+    hoverBorder: 'neon-border-purple'
   },
   ccn: {
     icon: Lock,
@@ -56,11 +56,11 @@ const categoryConfig = {
     border: 'border-rose-500/50',
     text: 'text-rose-400',
     bg: 'bg-rose-500/10',
-    hoverBorder: 'neon-border-red'
+    hoverBorder: 'neon-border-purple'
   },
   shopify: {
     icon: ShoppingCart,
-    color: 'from-orange-600 to-red-900',
+    color: 'from-orange-600 to-purple-900',
     border: 'border-orange-500/50',
     text: 'text-orange-400',
     bg: 'bg-orange-500/10',
@@ -97,17 +97,17 @@ export default function GatesListPage() {
   }
 
   return (
-    <div className="space-y-8 p-6 matrix-bg min-h-screen rounded-xl border border-red-900/30">
+    <div className="space-y-8 p-6 matrix-bg min-h-screen rounded-xl border border-purple-900/30">
       {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-red-500/20 pb-6 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-purple-500/20 pb-6 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Zap className="h-10 w-10 text-red-500 animate-pulse-glow" />
-            <h1 className="text-4xl font-black uppercase tracking-widest text-white neon-text-red">
+            <Zap className="h-10 w-10 text-purple-500 animate-pulse-glow" />
+            <h1 className="text-4xl font-black uppercase tracking-widest text-white neon-text-purple">
               GATES
             </h1>
           </div>
-          <p className="mt-2 font-mono-cyber text-sm text-red-500/80 uppercase">
+          <p className="mt-2 font-mono-cyber text-sm text-purple-500/80 uppercase">
             &gt; Selecciona un gate para comenzar a verificar
           </p>
         </div>
@@ -118,8 +118,8 @@ export default function GatesListPage() {
         <button
           onClick={() => setFilter('all')}
           className={`cyber-clip-alt px-6 py-2.5 font-mono-cyber text-sm font-bold uppercase transition-all duration-300 cursor-pointer ${filter === 'all'
-            ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.6)]'
-            : 'border border-red-500/30 bg-black/60 text-red-500 hover:bg-red-900/30'
+            ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.6)]'
+            : 'border border-purple-500/30 bg-black/60 text-purple-500 hover:bg-purple-900/30'
             }`}
         >
           [ Todos los Gates ]
@@ -167,8 +167,8 @@ export default function GatesListPage() {
                   </>
                 ) : (
                   <>
-                    <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                    <span className="font-mono-cyber text-[10px] text-red-500">OFFLINE</span>
+                    <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                    <span className="font-mono-cyber text-[10px] text-purple-500">OFFLINE</span>
                   </>
                 )}
               </div>
@@ -179,7 +179,7 @@ export default function GatesListPage() {
                   <Icon className={`h-6 w-6 ${config.text}`} />
                 </div>
 
-                <h3 className={`mb-1 text-xl font-black uppercase tracking-wider text-white group-hover:neon-text-red`}>
+                <h3 className={`mb-1 text-xl font-black uppercase tracking-wider text-white group-hover:neon-text-purple`}>
                   {gate.name}
                 </h3>
                 <p className="mb-4 font-mono-cyber text-xs text-gray-400 line-clamp-2 h-8">
@@ -189,7 +189,7 @@ export default function GatesListPage() {
                 {/* Min Rank Badge */}
                 <div className="mb-3 flex items-center gap-2">
                   <span className="font-mono-cyber text-[9px] uppercase tracking-widest text-gray-500">RANGO MIN:</span>
-                  <span className={`uppercase font-bold text-[10px] px-2 py-0.5 border ${gate.minRank === 'admin' ? 'text-red-400 border-red-500/30 bg-red-950/30' :
+                  <span className={`uppercase font-bold text-[10px] px-2 py-0.5 border ${gate.minRank === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-950/30' :
                     gate.minRank === 'moderador' ? 'text-purple-400 border-purple-500/30 bg-purple-950/30' :
                       gate.minRank === 'seller' ? 'text-blue-400 border-blue-500/30 bg-blue-950/30' :
                         gate.minRank === 'vip' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-950/30' :
@@ -205,9 +205,9 @@ export default function GatesListPage() {
                       <span className="text-green-400 font-bold">{gate.stats.lives}</span>
                       <span className="text-green-500 ml-1">LIVE</span>
                     </div>
-                    <div className="border border-red-500/30 bg-red-950/40 px-2 py-1.5 text-center rounded">
-                      <span className="text-red-400 font-bold">{gate.stats.deads}</span>
-                      <span className="text-red-500 ml-1">DEAD</span>
+                    <div className="border border-purple-500/30 bg-purple-950/40 px-2 py-1.5 text-center rounded">
+                      <span className="text-purple-400 font-bold">{gate.stats.deads}</span>
+                      <span className="text-purple-500 ml-1">DEAD</span>
                     </div>
                     <div className={`border px-2 py-1.5 text-center rounded ${gate.stats.successRate >= 50
                       ? 'border-green-500/30 bg-green-950/40 text-green-400'
@@ -231,7 +231,7 @@ export default function GatesListPage() {
                       {gate.creditsLive} Live
                     </span>
                     <span className="text-gray-600">/</span>
-                    <span className="flex items-center gap-1 text-red-500">
+                    <span className="flex items-center gap-1 text-purple-500">
                       <Zap className="h-3 w-3" />
                       {gate.creditsDead} Dead
                     </span>
@@ -241,12 +241,12 @@ export default function GatesListPage() {
 
               {/* Hover UI overlay */}
               <div className="absolute bottom-4 right-4 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:-translate-x-1">
-                <ArrowRight className="h-6 w-6 text-red-500" />
+                <ArrowRight className="h-6 w-6 text-purple-500" />
               </div>
 
               {/* Cyberpunk corner accents */}
-              <div className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-red-500/50" />
-              <div className="absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-red-500/50" />
+              <div className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-purple-500/50" />
+              <div className="absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-purple-500/50" />
             </Link>
           )
         })}
@@ -254,10 +254,10 @@ export default function GatesListPage() {
 
       {/* Empty state */}
       {filteredGates.length === 0 && (
-        <div className="flex flex-col items-center justify-center border border-dashed border-red-500/30 bg-red-950/10 py-20 cyber-clip">
-          <Terminal className="h-16 w-16 text-red-500/50 mb-4" />
-          <h3 className="font-mono-cyber text-lg font-bold text-red-500 uppercase tracking-widest neon-text-red">ERROR: GATE NO ENCONTRADO</h3>
-          <p className="mt-2 font-mono-cyber text-sm text-red-400/70">
+        <div className="flex flex-col items-center justify-center border border-dashed border-purple-500/30 bg-purple-950/10 py-20 cyber-clip">
+          <Terminal className="h-16 w-16 text-purple-500/50 mb-4" />
+          <h3 className="font-mono-cyber text-lg font-bold text-purple-500 uppercase tracking-widest neon-text-purple">ERROR: GATE NO ENCONTRADO</h3>
+          <p className="mt-2 font-mono-cyber text-sm text-purple-400/70">
             {filter === 'all'
               ? '> No hay gates activos.'
               : `> El filtro '${filter}' no obtuvo resultados.`}

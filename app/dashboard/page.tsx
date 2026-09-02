@@ -58,7 +58,7 @@ function MatrixRain({ className = '' }: { className?: string }) {
         const x = i * 20
         columns[i] += 10
         if (columns[i] > canvas.height) columns[i] = 0
-        ctx.fillStyle = `rgba(220, 38, 38, ${0.08 + Math.random() * 0.07})`
+        ctx.fillStyle = `rgba(147, 51, 234, ${0.08 + Math.random() * 0.07})`
         ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, columns[i])
       }
     }
@@ -82,21 +82,21 @@ function MatrixRain({ className = '' }: { className?: string }) {
 function StatCard({ title, value, subtitle, icon: Icon, color }: { title: string; value: string; subtitle?: string; icon: React.ElementType; color: string }) {
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-red-900/30 bg-gradient-to-br from-[#0d0d0d] to-[#111111] p-5 transition-all duration-500 hover:border-red-600/60 hover:shadow-[0_0_30px_rgba(220,38,38,0.15)] hover:-translate-y-0.5">
+    <div className="group relative overflow-hidden rounded-lg border border-purple-900/30 bg-gradient-to-br from-[#0d0d0d] to-[#111111] p-5 transition-all duration-500 hover:border-purple-600/60 hover:shadow-[0_0_30px_rgba(147,51,234,0.15)] hover:-translate-y-0.5">
       <div className="absolute left-0 top-0 h-8 w-8">
         <svg viewBox="0 0 32 32" className="h-full w-full">
-          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(220, 38, 38, 0.3)" />
+          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(147, 51, 234, 0.3)" />
         </svg>
       </div>
       <div className="absolute bottom-0 right-0 h-8 w-8 rotate-180">
         <svg viewBox="0 0 32 32" className="h-full w-full">
-          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(220, 38, 38, 0.2)" />
+          <path d="M0,0 L12,0 L12,2 L2,2 L2,12 L0,12 Z" fill="rgba(147, 51, 234, 0.2)" />
         </svg>
       </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 via-red-600/5 to-red-600/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-red-500/10 to-transparent" />
-      <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full blur-2xl group-hover:bg-red-500/10 transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/5 to-purple-600/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-purple-500/10 to-transparent" />
+      <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500" />
       <div className="relative flex items-start justify-between">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500">{title}</p>
@@ -105,25 +105,25 @@ function StatCard({ title, value, subtitle, icon: Icon, color }: { title: string
         </div>
         <div className="relative flex h-14 w-14 items-center justify-center">
           <svg className="absolute inset-0 h-full w-full" viewBox="0 0 56 56">
-            <path d="M28,2 L52,15 L52,41 L28,54 L4,41 L4,15 Z" fill="rgba(220, 38, 38, 0.1)" stroke="rgba(220, 38, 38, 0.3)" strokeWidth="1" />
+            <path d="M28,2 L52,15 L52,41 L28,54 L4,41 L4,15 Z" fill="rgba(147, 51, 234, 0.1)" stroke="rgba(147, 51, 234, 0.3)" strokeWidth="1" />
           </svg>
           <Icon className={`relative z-10 h-6 w-6 ${color} group-hover:scale-110 transition-transform duration-300`} />
         </div>
       </div>
-      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-red-900/30 to-transparent" />
+      <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-900/30 to-transparent" />
     </div>
   )
 }
 
 function PulseDot({ color = 'green' }: { color?: string }) {
-  const dotClass = color === 'green' ? 'bg-green-500' : 'bg-red-500'
+  const dotClass = color === 'green' ? 'bg-green-500' : 'bg-purple-500'
   return (
     <span className={`inline-flex h-2 w-2 rounded-full ${dotClass}`} />
   )
 }
 
 function Panel({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-lg border border-red-900/30 bg-[#0a0a0f] overflow-hidden">{children}</div>
+  return <div className="rounded-lg border border-purple-900/30 bg-[#0a0a0f] overflow-hidden">{children}</div>
 }
 
 export default function DashboardPage() {
@@ -171,10 +171,10 @@ export default function DashboardPage() {
   const animatedCredits = useCounter(data?.userCredits ?? 0)
 
   if (loading) return (
-    <div className="rounded-xl border border-red-900/20 bg-black/60 p-12 flex items-center justify-center">
+    <div className="rounded-xl border border-purple-900/20 bg-black/60 p-12 flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-        <span className="font-mono-cyber text-xs text-red-400">CARGANDO SISTEMA...</span>
+        <div className="h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <span className="font-mono-cyber text-xs text-purple-400">CARGANDO SISTEMA...</span>
       </div>
     </div>
   )
@@ -189,10 +189,10 @@ export default function DashboardPage() {
       <div className="relative z-10 space-y-6">
         {/* Top Stats Row */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="USUARIOS" value={String(animatedUsers)} subtitle={`${data?.recentUsers.length ?? 0} nuevos`} icon={Users} color="text-red-500" />
-          <StatCard title="GATES ACTIVOS" value={String(animatedGates)} subtitle={`de ${data?.gateCount ?? 0} totales`} icon={Activity} color="text-red-500" />
-          <StatCard title="MIS CRÉDITOS" value={String(animatedCredits)} subtitle={`Rango: ${data?.userRank ?? 'user'}`} icon={Zap} color="text-red-500" />
-          <StatCard title="SUCCESS RATE" value={`${animatedRate}%`} subtitle={`${totalChecks} verificaciones`} icon={BarChart3} color="text-red-500" />
+          <StatCard title="USUARIOS" value={String(animatedUsers)} subtitle={`${data?.recentUsers.length ?? 0} nuevos`} icon={Users} color="text-purple-500" />
+          <StatCard title="GATES ACTIVOS" value={String(animatedGates)} subtitle={`de ${data?.gateCount ?? 0} totales`} icon={Activity} color="text-purple-500" />
+          <StatCard title="MIS CRÉDITOS" value={String(animatedCredits)} subtitle={`Rango: ${data?.userRank ?? 'user'}`} icon={Zap} color="text-purple-500" />
+          <StatCard title="SUCCESS RATE" value={`${animatedRate}%`} subtitle={`${totalChecks} verificaciones`} icon={BarChart3} color="text-purple-500" />
         </div>
 
         {/* Second Row: Global Stats + Right Column */}
@@ -202,7 +202,7 @@ export default function DashboardPage() {
             <div className="relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6">
               <div className="opacity-20" />
               <div className="relative z-10">
-                <h2 className="mb-4 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-red-400 border-b border-red-900/50 pb-3 flex items-center gap-2">
+                <h2 className="mb-4 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-purple-400 border-b border-purple-900/50 pb-3 flex items-center gap-2">
                   <Terminal className="h-4 w-4" /> <span>Estadísticas Globales</span>
                 </h2>
                 <div className="grid grid-cols-3 gap-3">
@@ -210,9 +210,9 @@ export default function DashboardPage() {
                     <p className="font-mono-cyber text-2xl font-black text-green-400 tabular-nums">{animatedLives}</p>
                     <p className="font-mono-cyber text-[10px] uppercase text-green-700 mt-1 flex items-center justify-center gap-1"><CheckCircle2 className="h-3 w-3" /> Live</p>
                   </div>
-                  <div className="border border-red-900/40 bg-red-950/20 p-4 cyber-clip-alt text-center">
-                    <p className="font-mono-cyber text-2xl font-black text-red-500 tabular-nums">{animatedDeads}</p>
-                    <p className="font-mono-cyber text-[10px] uppercase text-red-700 mt-1 flex items-center justify-center gap-1"><XCircle className="h-3 w-3" /> Dead</p>
+                  <div className="border border-purple-900/40 bg-purple-950/20 p-4 cyber-clip-alt text-center">
+                    <p className="font-mono-cyber text-2xl font-black text-purple-500 tabular-nums">{animatedDeads}</p>
+                    <p className="font-mono-cyber text-[10px] uppercase text-purple-700 mt-1 flex items-center justify-center gap-1"><XCircle className="h-3 w-3" /> Dead</p>
                   </div>
                   <div className="border border-blue-900/40 bg-blue-950/20 p-4 cyber-clip-alt text-center">
                     <p className="font-mono-cyber text-2xl font-black text-blue-400 tabular-nums">{animatedTotal}</p>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-center gap-4">
                       <div className="flex-1">
                         <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full transition-all duration-1000" style={{ width: `${successRate}%` }} />
+                          <div className="h-full bg-gradient-to-r from-purple-500 via-yellow-500 to-green-500 rounded-full transition-all duration-1000" style={{ width: `${successRate}%` }} />
                         </div>
                       </div>
                       <span className="font-mono-cyber text-2xl font-black text-white tabular-nums">{animatedRate}%</span>
@@ -232,9 +232,9 @@ export default function DashboardPage() {
                 </div>
 
                 <h3 className="mt-4 mb-2 font-mono-cyber text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                  <span className="h-px flex-1 bg-red-900/30" />
+                  <span className="h-px flex-1 bg-purple-900/30" />
                   Gates por Categoría
-                  <span className="h-px flex-1 bg-red-900/30" />
+                  <span className="h-px flex-1 bg-purple-900/30" />
                 </h3>
                 <div className="space-y-1.5">
                   {data?.gatesByCategory.map(({ category, count, lives, deads }) => {
@@ -242,13 +242,13 @@ export default function DashboardPage() {
                     const Icon = meta?.icon ?? Terminal
                     const sr = lives + deads > 0 ? Math.round((lives / (lives + deads)) * 100) : 0
                     return (
-                      <div key={category} className="group/cat flex items-center gap-3 border border-gray-800 bg-black/50 px-3 py-2 hover:border-red-800/50 hover:bg-red-950/10 transition-all duration-300">
+                      <div key={category} className="group/cat flex items-center gap-3 border border-gray-800 bg-black/50 px-3 py-2 hover:border-purple-800/50 hover:bg-purple-950/10 transition-all duration-300">
                         <Icon className={`h-4 w-4 shrink-0 ${meta?.color ?? 'text-gray-400'} group-hover/cat:scale-110 transition-transform`} />
                         <div className="flex-1 min-w-0">
                           <p className="font-mono-cyber text-xs text-white uppercase truncate">{category}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[10px] text-green-500">{lives}L</span>
-                            <span className="text-[10px] text-red-500">{deads}D</span>
+                            <span className="text-[10px] text-purple-500">{deads}D</span>
                             <span className="text-[10px] text-gray-600">|</span>
                             <span className={`text-[10px] ${sr >= 50 ? 'text-green-500' : sr > 0 ? 'text-yellow-500' : 'text-gray-600'}`}>{sr}%</span>
                           </div>
@@ -267,18 +267,18 @@ export default function DashboardPage() {
             <Panel>
               <div className="relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6">
                 <div className="relative z-10">
-                  <h2 className="mb-3 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-red-400 border-b border-red-900/50 pb-3 flex items-center gap-2">
+                  <h2 className="mb-3 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-purple-400 border-b border-purple-900/50 pb-3 flex items-center gap-2">
                     <Globe className="h-4 w-4" /> <span>Top Gates por Live</span>
                   </h2>
                   <div className="space-y-1.5">
                     {data?.topGates.map((g, i) => (
                       <div key={i} className="group/gate flex items-center gap-3 border border-gray-800 bg-black/50 px-3 py-2 hover:border-green-800/40 hover:bg-green-950/10 transition-all duration-300">
-                        <span className="font-mono-cyber text-lg font-black text-gray-600 w-6 group-hover/gate:text-red-500 transition-colors">#{i + 1}</span>
+                        <span className="font-mono-cyber text-lg font-black text-gray-600 w-6 group-hover/gate:text-purple-500 transition-colors">#{i + 1}</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-mono-cyber text-xs text-white truncate">{g.name}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[10px] text-green-500">{g.lives}L</span>
-                            <span className="text-[10px] text-red-500">{g.deads}D</span>
+                            <span className="text-[10px] text-purple-500">{g.deads}D</span>
                           </div>
                         </div>
                         <span className={`font-mono-cyber text-xs font-bold ${g.successRate >= 50 ? 'text-green-400' : g.successRate > 0 ? 'text-yellow-400' : 'text-gray-500'}`}>
@@ -298,7 +298,7 @@ export default function DashboardPage() {
             <Panel>
               <div className="relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6">
                 <div className="relative z-10">
-                  <h2 className="mb-3 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-red-400 border-b border-red-900/50 pb-3 flex items-center gap-2">
+                  <h2 className="mb-3 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-purple-400 border-b border-purple-900/50 pb-3 flex items-center gap-2">
                     <TrendingUp className="h-4 w-4" /> <span>Top Usuarios por Live</span>
                   </h2>
                   <div className="space-y-1.5">
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                           <p className="font-mono-cyber text-xs text-white truncate">{u.username}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[10px] text-green-500">{u.lives}L</span>
-                            <span className="text-[10px] text-red-500">{u.deads}D</span>
+                            <span className="text-[10px] text-purple-500">{u.deads}D</span>
                           </div>
                         </div>
                         <span className={`font-mono-cyber text-xs font-bold ${u.rank === 'admin' ? 'text-yellow-400' : 'text-gray-500'}`}>
@@ -331,7 +331,7 @@ export default function DashboardPage() {
         <Panel>
           <div className="relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6">
             <div className="relative z-10">
-              <h2 className="mb-3 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-red-400 border-b border-red-900/50 pb-3 flex items-center gap-2">
+              <h2 className="mb-3 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-purple-400 border-b border-purple-900/50 pb-3 flex items-center gap-2">
                 <Activity className="h-4 w-4" /> <span>Actividad Reciente</span>
               </h2>
               <div className="space-y-2">
@@ -389,7 +389,7 @@ export default function DashboardPage() {
         <Panel>
           <div className="relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6">
             <div className="relative z-10">
-              <h2 className="mb-4 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-red-400 border-b border-red-900/50 pb-3 flex items-center gap-2">
+              <h2 className="mb-4 font-mono-cyber text-sm font-bold uppercase tracking-[0.2em] text-purple-400 border-b border-purple-900/50 pb-3 flex items-center gap-2">
                 <Terminal className="h-4 w-4" /> <span>Estado del Sistema</span>
               </h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
