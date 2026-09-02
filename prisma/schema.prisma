@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  username            String    @unique
+  password            String
+  telegramId          String    @map("telegram_id")
+  rank                String    @default("user")
+  credits             Int       @default(0)
+  lives               Int       @default(0)
+  deads               Int       @default(0)
+  membershipExpiresAt DateTime? @map("membership_expires_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  redeemedKeys        Key[]     @relation("UserKeys")
+  createdKeys         Key[]     @relation("CreatedKeys")
+
+  @@map("users")
+}
+
+model Key {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  credits     Int       @default(0)
+  days        Int       @default(0)
+  rank        String    @default("user")
+  isUsed      Boolean   @default(false) @map("is_used")
+  usedById    String?   @map("used_by_id")
+  usedBy      User?     @relation("UserKeys", fields: [usedById], references: [id], onDelete: Cascade)
+  createdById String?   @map("created_by_id")
+  createdBy   User?     @relation("CreatedKeys", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  usedAt      DateTime? @map("used_at")
+
+  @@map("keys")
+}
+
+model TempMail {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  service   String
+  email     String
+  type      String // jwt | sid | token | dropmail
+  token     String?
+  password  String?
+  domain    String?
+  sidToken  String?  @map("sid_token")
+  dropToken String?  @map("drop_token")
+  sessionId String?  @map("session_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("temp_mails")
+}
+
+model Gate {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  description String   @default("")
+  isActive    Boolean  @default(true) @map("is_active")
+  apiUrl      String   @default("") @map("api_url")
+  creditsLive Int      @default(0) @map("credits_live")
+  creditsDead Int      @default(0) @map("credits_dead")
+  minRank     String   @default("premium") @map("min_rank")
+  threads     Int      @default(1)
+  stats       Json     @default("{\"lives\":0,\"deads\":0,\"successRate\":0,\"total\":0}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([category])
+  @@index([isActive])
+  @@index([createdAt(sort: Desc)])
+  @@map("gates")
+}
