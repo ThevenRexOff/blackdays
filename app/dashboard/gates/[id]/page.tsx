@@ -419,10 +419,38 @@ export default function GatePage() {
     }
   }
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, label = 'Copiado') => {
     try {
       await navigator.clipboard.writeText(text)
-    } catch { }
+      toast.success(`${label} al portapapeles`, {
+        icon: '📋', duration: 2500,
+        style: { background: '#111', border: '1px solid #22c55e', color: '#4ade80' }
+      })
+    } catch {
+      try {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        const ok = document.execCommand('copy')
+        document.body.removeChild(ta)
+        if (ok) {
+          toast.success(`${label} al portapapeles`, {
+            icon: '📋', duration: 2500,
+            style: { background: '#111', border: '1px solid #22c55e', color: '#4ade80' }
+          })
+          return
+        }
+        throw new Error('copy failed')
+      } catch {
+        toast.error(`No se pudo copiar ${label.toLowerCase()}`, {
+          icon: '❌', duration: 3000,
+          style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
+        })
+      }
+    }
   }
 
   const removeLive = (index: number) => {
@@ -702,7 +730,7 @@ export default function GatePage() {
             />
             {isGenerator && cookieInput && (
               <div className="mt-2 flex items-center justify-end gap-2">
-                <button onClick={() => { navigator.clipboard.writeText(cookieInput) }}
+                <button onClick={() => copyToClipboard(cookieInput, 'Cookie')}
                   className="flex items-center gap-1 border border-cyan-500/50 bg-cyan-950/40 px-3 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-cyan-400 hover:bg-cyan-600 hover:text-white cursor-pointer">
                   <Copy className="h-3.5 w-3.5" /> COPIAR COOKIE
                 </button>
@@ -809,18 +837,14 @@ export default function GatePage() {
 
       {/* ── Action Buttons ── */}
       <div className="flex flex-col md:flex-row gap-4">
-        {!isGenerator && (
-          <>
-            <button onClick={handleStart} disabled={isRunning || insufficientCredits || !gate.apiUrl}
-              className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-purple-950/40 border border-purple-500/50 px-6 py-4 font-mono-cyber font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-              <Play className="h-5 w-5" /> INICIAR
-            </button>
-            <button onClick={handleStop} disabled={!isRunning}
-              className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 border border-orange-500/50 bg-black/60 px-6 py-4 font-mono-cyber font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-              <Square className="h-5 w-5" /> DETENER
-            </button>
-          </>
-        )}
+        <button onClick={handleStart} disabled={isRunning || insufficientCredits || !gate.apiUrl}
+          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-purple-950/40 border border-purple-500/50 px-6 py-4 font-mono-cyber font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          <Play className="h-5 w-5" /> INICIAR
+        </button>
+        <button onClick={handleStop} disabled={!isRunning}
+          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 border border-orange-500/50 bg-black/60 px-6 py-4 font-mono-cyber font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          <Square className="h-5 w-5" /> DETENER
+        </button>
         <button onClick={() => setShowGenModal(true)}
           className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-orange-600 border border-purple-400 px-6 py-4 font-mono-cyber font-bold text-white transition-all hover:from-purple-500 hover:to-orange-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] cursor-pointer">
           <Sparkles className="h-5 w-5 animate-pulse" /> GENERAR TARJETAS
