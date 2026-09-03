@@ -746,6 +746,16 @@ export default function GatePage() {
                   className="flex items-center gap-1 border border-cyan-500/50 bg-cyan-950/40 px-3 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-cyan-400 hover:bg-cyan-600 hover:text-white cursor-pointer">
                   <Copy className="h-3.5 w-3.5" /> COPIAR COOKIE
                 </button>
+                <button
+                  onClick={() => {
+                    setCookieInput('')
+                    try { localStorage.removeItem(`amz_cookie_${params?.id}`) } catch {}
+                    toast.info('Cookie limpiada')
+                  }}
+                  className="flex items-center gap-1 border border-red-500/50 bg-red-950/40 px-3 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-red-400 hover:bg-red-600 hover:text-white cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> LIMPIAR
+                </button>
               </div>
             )}
           </div>
