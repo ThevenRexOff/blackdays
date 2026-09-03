@@ -17,7 +17,6 @@ import {
   ShoppingCart,
   Cookie,
   Phone,
-  FileText,
   User,
   ShieldCheck,
   Mail
@@ -27,7 +26,7 @@ import { cn } from '@/lib/utils'
 interface Gate {
   id: string
   name: string
-  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify' | 'cookie' | 'phone' | 'plain'
+  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify' | 'cookie' | 'phone'
 }
 
 const categoryIcons = {
@@ -38,7 +37,6 @@ const categoryIcons = {
   shopify: ShoppingCart,
   cookie: Cookie,
   phone: Phone,
-  plain: FileText,
 }
 
 const categoryLabels = {
@@ -49,10 +47,9 @@ const categoryLabels = {
   shopify: 'Shopify Gates',
   cookie: 'Cookie Gates',
   phone: 'Phone Gates',
-  plain: 'Plain Gates',
 }
 
-const categoryOrder = ['auth', 'charged', 'ccn', 'special', 'shopify', 'cookie', 'phone', 'plain'] as const
+const categoryOrder = ['auth', 'charged', 'ccn', 'special', 'shopify', 'cookie', 'phone'] as const
 
 export function Sidebar() {
   const pathname = usePathname()
