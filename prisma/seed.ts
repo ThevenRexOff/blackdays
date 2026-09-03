@@ -183,7 +183,7 @@ const gates = [
   {
     id: 'gate-00000000-amz-amazon-0014',
     name: 'Amazon (Cookie)',
-    category: 'special',
+    category: 'cookie',
     description: 'Amazon — requiere cookie de Amazon.',
     isActive: true,
     apiUrl: `${BASE}/gate/amz`,
