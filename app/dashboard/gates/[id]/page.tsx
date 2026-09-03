@@ -319,10 +319,12 @@ export default function GatePage() {
           return
         }
 
-        const result: CardResult = { card, status: data.status ?? 'error', response: data.response ?? 'Error in API', time_taken: data.time_taken }
+        // Normalize status: handle boolean false, null, undefined -> 'error'
+        const apiStatus = data.status === false ? 'error' : data.status
+        const result: CardResult = { card, status: apiStatus ?? 'error', response: data.response ?? 'Error in API', time_taken: data.time_taken }
 
         // Cookie dead / invalid — stop immediately and prompt user to refresh cookie
-        if (data.status !== 'live' && data.response?.toLowerCase?.().includes('cookie')) {
+        if (apiStatus !== 'live' && data.response?.toLowerCase?.().includes('cookie')) {
           stopRef.current = true
           setIsRunning(false)
           toast.error('Cookie expirada o inválida — genera una nueva cookie y vuelve a intentarlo', {
@@ -332,7 +334,7 @@ export default function GatePage() {
           return
         }
 
-        if (data.status === 'live') {
+        if (apiStatus === 'live') {
           localLives++
           setLiveResults(prev => [...prev, result])
           setTimeout(() => liveRef.current?.scrollTo({ top: liveRef.current.scrollHeight, behavior: 'smooth' }), 50)
