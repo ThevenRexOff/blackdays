@@ -4,7 +4,8 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir \
     curl_cffi faker requests aiohttp pycryptodome fake_useragent \
-    beautifulsoup4 luhn cryptography colorama psycopg2-binary
+    beautifulsoup4 luhn cryptography colorama psycopg2-binary \
+    Pillow numpy aiofiles python-dotenv lxml rich
 
 EXPOSE 8080
 

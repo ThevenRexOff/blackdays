@@ -22,6 +22,12 @@ COUNTRIES = {
 def _generate_cookie(country: str, proxy: str = None) -> dict:
     try:
         from account_creator import AmazonAccountCreator
+        if not proxy:
+            try:
+                from apis.proxies import get_proxy
+                proxy = get_proxy(country) or None
+            except Exception:
+                proxy = None
         raw_domains  = os.getenv('MAIL_DOMAINS', 'shopsxgitario.com,sxgitarioshop.com')
         mail_domains = [d.strip() for d in raw_domains.split(',') if d.strip()]
         creator = AmazonAccountCreator(

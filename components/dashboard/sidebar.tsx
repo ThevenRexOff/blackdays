@@ -281,6 +281,25 @@ export function Sidebar() {
             </Link>
           </li>
 
+          {/* Amazon Cookies Generator Link */}
+          <li>
+            <Link
+              href="/dashboard/amazon-cookies"
+              className={cn(
+                'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 font-mono text-xs font-medium tracking-wider transition-all duration-200',
+                pathname === '/dashboard/amazon-cookies'
+                  ? 'bg-gradient-to-r from-purple-600/20 to-transparent text-purple-400 border-l-2 border-purple-500'
+                  : 'text-gray-500 hover:bg-purple-900/10 hover:text-gray-300 border-l-2 border-transparent'
+              )}
+            >
+              <Cookie className="h-4 w-4" />
+              Amazon Cookies
+              {pathname === '/dashboard/amazon-cookies' && (
+                <div className="absolute right-2 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-purple-500 shadow-lg shadow-purple-500/50" />
+              )}
+            </Link>
+          </li>
+
           {/* Admin Section */}
           {isManager && (
             <li>

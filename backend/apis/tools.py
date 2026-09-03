@@ -149,7 +149,7 @@ def cmd_amz_generator(params: dict) -> dict:
         return {'status': False, 'error':
                 f'Invalid country [{country}]. Supported: {", ".join(COUNTRIES.keys())}'}
     from apis.proxies import get_proxy
-    proxy = (proxy or get_proxy('us')) or None
+    proxy = (proxy or get_proxy(country)) or None
     result = _generate_cookie(country, proxy)
     if not result or not result.get('status'):
         return {'status': False, 'error':
