@@ -372,7 +372,7 @@ export default function GatePage() {
     if (!gate) return
     setGenCookieLoading(true)
     try {
-      const res = await fetch('/api/tools/generate', {
+      const res = await fetch('/api/tools/amazon-cookie', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ country: genCookieCountry }),
