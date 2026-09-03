@@ -25,7 +25,7 @@ interface Gate {
   createdAt: string
 }
 
-const categoryOptions = ['auth', 'charged', 'ccn', 'special', 'shopify', 'cookie', 'phone', 'plain']
+const categoryOptions = ['auth', 'charged', 'ccn', 'special', 'shopify', 'cookie', 'phone']
 const rankOptions = ['premium', 'vip', 'seller', 'moderador', 'admin']
 
 export default function AdminGatesPage() {

@@ -21,7 +21,7 @@ interface GateStats {
 interface Gate {
   id: string
   name: string
-  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify' | 'cookie' | 'phone' | 'plain'
+  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify' | 'cookie' | 'phone'
   description: string
   isActive: boolean
   creditsLive: number
@@ -97,6 +97,13 @@ const yearOptions = Array.from({ length: 11 }, (_, i) => String(currentYear + i)
 const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
 
 const GENERATOR_GATE_ID = '9a2cf99d-6c22-4d10-8f20-amzgen0001'
+
+const GENERATOR_COUNTRIES: Record<string, string> = {
+  US: '🇺🇸 US', CA: '🇨🇦 CA', MX: '🇲🇽 MX', BR: '🇧🇷 BR',
+  UK: '🇬🇧 UK', DE: '🇩🇪 DE', FR: '🇫🇷 FR', IT: '🇮🇹 IT',
+  ES: '🇪🇸 ES', NL: '🇳🇱 NL', SG: '🇸🇬 SG', AU: '🇦🇺 AU',
+  JP: '🇯🇵 JP',
+}
 
 export default function GatePage() {
   const params = useParams()
@@ -237,8 +244,8 @@ export default function GatePage() {
               variant: shopifyConfig.product.variant,
             } : false,
             cookie: gate.category === 'cookie' ? cookieInput : '',
-            phone: gate.category === 'phone' || gate.category === 'plain' ? phoneInput : '',
-            monto: gate.category === 'phone' || gate.category === 'plain' ? montoInput : '',
+            phone: gate.category === 'phone' ? phoneInput : '',
+            monto: gate.category === 'phone' ? montoInput : '',
           }),
         })
         const data = await res.json()
@@ -372,10 +379,21 @@ export default function GatePage() {
       })
       const data = await res.json()
       if (data.error) {
-        toast.error(data.error, {
-          duration: 5000,
-          style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
-        })
+        if (data.creditsRemaining !== undefined) {
+          setUserCredits(data.creditsRemaining)
+          window.dispatchEvent(new CustomEvent('credits-updated', { detail: data.creditsRemaining }))
+        }
+        if (String(data.error).toLowerCase().includes('captcha')) {
+          toast.warning(`Amazon detectó un captcha — no se pudo generar la cookie. No se descontaron créditos (te quedan ${data.creditsRemaining ?? '?'}). Reintenta en unos segundos.`, {
+            icon: '⚡', duration: 6000,
+            style: { background: '#111', border: '1px solid #f59e0b', color: '#fbbf24' }
+          })
+        } else {
+          toast.error(data.error, {
+            duration: 5000,
+            style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
+          })
+        }
         return
       }
       if (data.creditsRemaining !== undefined) {
@@ -657,12 +675,15 @@ export default function GatePage() {
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
               <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                 <Terminal className="h-3 w-3" /> COOKIE DE AMAZON
+                <span className="rounded border border-cyan-500/40 bg-cyan-950/40 px-1.5 py-0.5 text-[9px] font-bold text-cyan-300">
+                  -{gate.creditsLive} CRÉDITOS
+                </span>
               </label>
               <div className="flex items-center gap-2">
                 <select value={genCookieCountry} onChange={(e) => setGenCookieCountry(e.target.value)}
                   disabled={genCookieLoading}
                   className="border border-cyan-900/50 bg-black/60 px-2 py-1.5 font-mono-cyber text-[10px] uppercase text-cyan-300 focus:border-cyan-400 focus:outline-none cursor-pointer">
-                  {['US', 'MX', 'CA'].map(c => <option key={c} value={c} className="bg-black text-white">{c}</option>)}
+                  {Object.entries(GENERATOR_COUNTRIES).map(([code, label]) => <option key={code} value={code} className="bg-black text-white">{label}</option>)}
                 </select>
                 <button onClick={handleGenerateCookie} disabled={genCookieLoading}
                   className="flex items-center gap-2 border border-cyan-500/50 bg-cyan-950/40 px-4 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-cyan-400 transition-all hover:bg-cyan-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
@@ -690,7 +711,7 @@ export default function GatePage() {
           </div>
         )}
 
-        {(gate.category === 'phone' || gate.category === 'plain') && (
+        {gate.category === 'phone' && (
           <div className="grid grid-cols-2 gap-4">
             <div className="relative overflow-hidden cyber-clip border border-yellow-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(234,179,8,0.1)]">
               <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-yellow-400">

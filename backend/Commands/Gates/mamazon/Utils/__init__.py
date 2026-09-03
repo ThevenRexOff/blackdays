@@ -85,15 +85,13 @@ class Core:
             return {"status": True, "success": success,
                     "card": card_str, "card_response": card_resp,
                     "response": message, "apiResponse": status,
-                    "gateway": f"Amazon ({country_code.upper()})",
-                    "Powered by": "Sxgitario @ Gateway Api Service"}
+                    "gateway": f"Amazon ({country_code.upper()})"}
 
         def _err(message: str) -> dict:
             return {"status": False, "success": False,
                     "card": card_str, "card_response": card_resp,
                     "response": message, "apiResponse": "Error ⚠️",
-                    "gateway": f"Amazon ({country_code.upper()})",
-                    "Powered by": "Sxgitario @ Gateway Api Service"}
+                    "gateway": f"Amazon ({country_code.upper()})"}
 
         if "unable to complete your Prime signup" in normalized or "sorry" in normalized:
             return _out(True, "Approved ✅", "Card successfully linked.")

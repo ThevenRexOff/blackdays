@@ -664,7 +664,6 @@ class FwcimAmazonSxgitario:
             return {
                 'status':    True,
                 'context':   'Amazon FWCIM Fingerprint Generator',
-                'poweredBy': 'Vxsilisk @ Sxgitario API Gateways Service',
                 'metadata1': md,
             }
         except Exception as error:

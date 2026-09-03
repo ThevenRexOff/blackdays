@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Zap, ShieldCheck, CreditCard, Sparkles, Lock, ArrowRight, Terminal, ShoppingCart } from 'lucide-react'
+import { Zap, ShieldCheck, CreditCard, Sparkles, Lock, ArrowRight, Terminal, ShoppingCart, Phone, Cookie } from 'lucide-react'
 
 interface GateStats {
   lives: number
@@ -14,7 +14,7 @@ interface GateStats {
 interface Gate {
   id: string
   name: string
-  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify'
+  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify' | 'phone' | 'cookie'
   description: string
   isActive: boolean
   creditsLive: number
@@ -64,6 +64,22 @@ const categoryConfig = {
     border: 'border-orange-500/50',
     text: 'text-orange-400',
     bg: 'bg-orange-500/10',
+    hoverBorder: 'neon-border-orange'
+  },
+  phone: {
+    icon: Phone,
+    color: 'from-cyan-600 to-cyan-900',
+    border: 'border-cyan-500/50',
+    text: 'text-cyan-400',
+    bg: 'bg-cyan-500/10',
+    hoverBorder: 'neon-border-purple'
+  },
+  cookie: {
+    icon: Cookie,
+    color: 'from-amber-600 to-amber-900',
+    border: 'border-amber-500/50',
+    text: 'text-amber-400',
+    bg: 'bg-amber-500/10',
     hoverBorder: 'neon-border-orange'
   }
 }

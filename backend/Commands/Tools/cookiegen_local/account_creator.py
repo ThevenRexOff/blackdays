@@ -84,7 +84,7 @@ class AmazonAccountCreator:
 
         try:
             if self.verbose and self.clearScreen and not Log._dashboard: os.system('cls' if os.name == 'nt' else 'clear')
-            Log.banner(["Amazon PWA", f"Attempt #{retry + 1}", "Powered by Sxgitario @ API Gateways"])
+            Log.banner(["Amazon PWA", f"Attempt #{retry + 1}"])
 
             if not hasattr(self, '_esc') or not self._esc._running:
                 self._esc = EscListener().start()
@@ -125,7 +125,6 @@ class AmazonAccountCreator:
                 "time_taken":           time.time() - self.initTime,
                 "retries":              retry,
                 "canvas_strategy":      FwcimAmazonSxgitario.current_canvas_strategy(),
-                "PoweredBy":            "Sxgitario @ API Gateways Services (https://t.me/Sxgitario)",
             }
             self._saveOutput(result)
             try:
@@ -274,8 +273,7 @@ class AmazonAccountCreator:
         Log.warn("Interrupted — discarding current identifier...")
         if hasattr(self, '_esc'): self._esc.stop()
         self.phoneData = None
-        return {"status": False, "message": "Cancelled by user",
-                "PoweredBy": "Sxgitario @ API Gateways Services (https://t.me/Sxgitario)"}
+        return {"status": False, "message": "Cancelled by user"}
 
     #//! Error tags that mean the identifier itself is burned — get a fresh one.
     #//! Everything else is a session/WAF issue that retries on the same address.
@@ -292,7 +290,6 @@ class AmazonAccountCreator:
             if self.verbose and self.clearScreen and not Log._dashboard: os.system('cls' if os.name == 'nt' else 'clear')
             return {
                 "status": False, "message": errorMessage,
-                "PoweredBy": "Sxgitario @ API Gateways Services (https://t.me/Sxgitario)",
             }
 
         if "unusual activity" in errorMessage or "actividad inusual" in errorMessage:
