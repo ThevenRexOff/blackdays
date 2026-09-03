@@ -211,10 +211,21 @@ def _has_auth_cookie(session):
         except Exception:
             return False
 
-    # Real auth cookies only — session-id / x-main are set on EVERY Amazon
-    # page (even logged out), so they can't prove a registration succeeded.
-    auth_cookie_names = {"at-main", "sess-at-main", "sso-state-main", "session-token"}
-    return bool(names & auth_cookie_names)
+    # Auth cookie must be present AND have a real value — not empty, not "-"
+    auth_cookie_names = {"at-main", "sess-at-main"}
+    has_auth_name = bool(names & auth_cookie_names)
+    if not has_auth_name:
+        return False
+
+    # Verify the at-main cookie has an actual value (not empty, not placeholder)
+    jar = session.cookies.jar if hasattr(session.cookies, 'jar') else session.cookies
+    for c in jar:
+        name = getattr(c, 'name', None) or (c[0] if isinstance(c, tuple) else None)
+        domain = getattr(c, 'domain', '') or ''
+        value = getattr(c, 'value', None) or (c[1] if isinstance(c, tuple) else '')
+        if name == 'at-main' and value and value != '-':
+            return True
+    return False
 
 
 def _get_session_id(session, domain):

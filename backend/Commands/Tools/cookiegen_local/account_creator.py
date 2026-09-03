@@ -52,7 +52,7 @@ class AmazonAccountCreator:
             return {"status": False, "message": f"{type(e).__name__}: {e}"}
 
         if not isinstance(account, amazon_v2.Account):
-            return {"status": False, "message": "Cookie generation failed (captcha or rejected)"}
+            return {"status": False, "message": "Amazon rechazó el registro (posible captcha, cookie no generada) — intenta con otro país o proxy"}
 
         cookie_str = account.cookie or ""
         cookie_dict = self._parse_cookie(cookie_str)
