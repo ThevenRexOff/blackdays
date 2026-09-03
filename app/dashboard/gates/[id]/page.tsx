@@ -778,12 +778,23 @@ export default function GatePage() {
               <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
                 <Terminal className="h-3 w-3" /> MONTO
               </label>
-              <input
+              <select
                 value={montoInput}
                 onChange={(e) => setMontoInput(e.target.value)}
-                placeholder="> Monto (ej: 100)"
                 className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-emerald-300 placeholder-emerald-900/50 focus:border-emerald-400 focus:outline-none border border-emerald-900/50"
-              />
+              >
+                <option value="">-- Selecciona monto --</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="80">80</option>
+                <option value="100">100</option>
+                <option value="150">150</option>
+                <option value="200">200</option>
+                <option value="300">300</option>
+                <option value="500">500</option>
+              </select>
             </div>
           </div>
         )}
