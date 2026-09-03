@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Globe,
   Zap,
+  Trash2,
 } from 'lucide-react'
 import { toast } from '@/lib/toast'
 import { useRouter } from 'next/navigation'
@@ -98,6 +99,14 @@ export default function AmazonCookiesPage() {
     setCopied(true)
     toast.success('Cookie copiada al portapapeles')
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const clearCookie = () => {
+    setCookie('')
+    setProfile(null)
+    setTimeTaken('')
+    setCopied(false)
+    toast.info('Cookie limpiada')
   }
 
   if (status === 'loading') {
@@ -211,17 +220,26 @@ export default function AmazonCookiesPage() {
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/60 to-transparent" />
             <div className="flex items-center justify-between mb-3">
               <p className="font-mono-cyber text-[10px] uppercase tracking-widest text-gray-500">TU COOKIE AMAZON</p>
-              <button
-                onClick={copyCookie}
-                className="flex items-center gap-1.5 border border-gray-700 hover:border-purple-500/50 bg-black/50 px-3 py-1.5 text-xs font-mono-cyber text-gray-400 hover:text-white transition-all duration-200 cursor-pointer"
-              >
-                {copied ? (
-                  <CheckCircle2 className="h-3 w-3 text-green-400" />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
-                {copied ? 'COPIADO' : 'COPIAR'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={copyCookie}
+                  className="flex items-center gap-1.5 border border-gray-700 hover:border-purple-500/50 bg-black/50 px-3 py-1.5 text-xs font-mono-cyber text-gray-400 hover:text-white transition-all duration-200 cursor-pointer"
+                >
+                  {copied ? (
+                    <CheckCircle2 className="h-3 w-3 text-green-400" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
+                  {copied ? 'COPIADO' : 'COPIAR'}
+                </button>
+                <button
+                  onClick={clearCookie}
+                  className="flex items-center gap-1.5 border border-gray-700 hover:border-red-500/50 bg-black/50 px-3 py-1.5 text-xs font-mono-cyber text-gray-400 hover:text-red-400 transition-all duration-200 cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  LIMPIAR
+                </button>
+              </div>
             </div>
             <textarea
               readOnly

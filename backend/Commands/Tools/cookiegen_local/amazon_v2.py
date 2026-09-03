@@ -260,7 +260,7 @@ def _arb_from_text(text):
 def build_session(proxy=None, country_code="US") -> AsyncSession:
     # Per-request HTTP session: 20s timeout (vaultproxies can be slow on
     # transatlantic hops), 2 retries per request.
-    session = AsyncSession(retry=2, impersonate=_IMPERSONATE, timeout=20.0)
+    session = AsyncSession(retry=2, impersonate=_IMPERSONATE, timeout=35.0)
     session.trust_env = False
     config = COUNTRY_CONFIG.get(country_code, COUNTRY_CONFIG["US"])
     accept_lang = config.get("accept_language", "en-US,en;q=0.9")
