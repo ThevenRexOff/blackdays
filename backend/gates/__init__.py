@@ -1,0 +1,1 @@
+# Pure gate package (no Telegram-bot dependency).

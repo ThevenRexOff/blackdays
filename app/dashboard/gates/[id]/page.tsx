@@ -21,7 +21,7 @@ interface GateStats {
 interface Gate {
   id: string
   name: string
-  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify'
+  category: 'auth' | 'charged' | 'ccn' | 'special' | 'shopify' | 'cookie' | 'phone' | 'plain'
   description: string
   isActive: boolean
   creditsLive: number
@@ -96,11 +96,19 @@ const currentYear = new Date().getFullYear()
 const yearOptions = Array.from({ length: 11 }, (_, i) => String(currentYear + i).slice(2))
 const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
 
+const GENERATOR_GATE_ID = '9a2cf99d-6c22-4d10-8f20-amzgen0001'
+
 export default function GatePage() {
   const params = useParams()
   const [gate, setGate] = useState<Gate | null>(null)
   const [loading, setLoading] = useState(true)
   const [cards, setCards] = useState('')
+  const [cookieInput, setCookieInput] = useState(() => typeof window !== 'undefined' ? (localStorage.getItem(`amz_cookie_${params?.id}`) ?? '') : '')
+  const [genCookieLoading, setGenCookieLoading] = useState(false)
+  const [genCookieCountry, setGenCookieCountry] = useState('US')
+  const isGenerator = params?.id === GENERATOR_GATE_ID
+  const [phoneInput, setPhoneInput] = useState('')
+  const [montoInput, setMontoInput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [userCredits, setUserCredits] = useState(0)
   const [showGenModal, setShowGenModal] = useState(false)
@@ -228,6 +236,9 @@ export default function GatePage() {
               title: shopifyConfig.product.title,
               variant: shopifyConfig.product.variant,
             } : false,
+            cookie: gate.category === 'cookie' ? cookieInput : '',
+            phone: gate.category === 'phone' || gate.category === 'plain' ? phoneInput : '',
+            monto: gate.category === 'phone' || gate.category === 'plain' ? montoInput : '',
           }),
         })
         const data = await res.json()
@@ -349,6 +360,46 @@ export default function GatePage() {
   }
 
   const handleStop = () => { stopRef.current = true; setIsRunning(false) }
+
+  const handleGenerateCookie = async () => {
+    if (!gate) return
+    setGenCookieLoading(true)
+    try {
+      const res = await fetch('/api/tools/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: genCookieCountry }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        toast.error(data.error, {
+          duration: 5000,
+          style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
+        })
+        return
+      }
+      if (data.creditsRemaining !== undefined) {
+        setUserCredits(data.creditsRemaining)
+        window.dispatchEvent(new CustomEvent('credits-updated', { detail: data.creditsRemaining }))
+      }
+      if (data.cookies) {
+        localStorage.setItem(`amz_cookie_${params?.id}`, data.cookies)
+        setCookieInput(data.cookies)
+      }
+      playSound('done')
+      toast.success(`Cookie generada (${data.country}) — -${data.creditsDeducted} créditos`, {
+        icon: '🍪', duration: 5000,
+        style: { background: '#111', border: '1px solid #22d3ee', color: '#67e8f9' }
+      })
+    } catch {
+      toast.error('Error al generar la cookie', {
+        duration: 4000,
+        style: { background: '#111', border: '1px solid #a855f7', color: '#c084fc' }
+      })
+    } finally {
+      setGenCookieLoading(false)
+    }
+  }
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -601,6 +652,71 @@ export default function GatePage() {
           />
         </div>
 
+        {gate.category === 'cookie' && (
+          <div className="relative overflow-hidden cyber-clip border border-cyan-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+              <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                <Terminal className="h-3 w-3" /> COOKIE DE AMAZON
+              </label>
+              <div className="flex items-center gap-2">
+                <select value={genCookieCountry} onChange={(e) => setGenCookieCountry(e.target.value)}
+                  disabled={genCookieLoading}
+                  className="border border-cyan-900/50 bg-black/60 px-2 py-1.5 font-mono-cyber text-[10px] uppercase text-cyan-300 focus:border-cyan-400 focus:outline-none cursor-pointer">
+                  {['US', 'MX', 'CA'].map(c => <option key={c} value={c} className="bg-black text-white">{c}</option>)}
+                </select>
+                <button onClick={handleGenerateCookie} disabled={genCookieLoading}
+                  className="flex items-center gap-2 border border-cyan-500/50 bg-cyan-950/40 px-4 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-cyan-400 transition-all hover:bg-cyan-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                  <Sparkles className="h-3.5 w-3.5" /> {genCookieLoading ? 'GENERANDO...' : `GENERAR COOKIE (-${gate.creditsLive})`}
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={cookieInput}
+              onChange={(e) => {
+                setCookieInput(e.target.value)
+                try { localStorage.setItem(`amz_cookie_${params?.id}`, e.target.value) } catch {}
+              }}
+              placeholder="> Pega aquí la cookie de Amazon (se guarda en tu navegador y se reutiliza) — o presiona GENERAR COOKIE"
+              className="h-28 w-full resize-none bg-black/50 px-3 py-2 font-mono-cyber text-sm text-cyan-300 placeholder-cyan-900/50 focus:border-cyan-400 focus:outline-none border border-cyan-900/50"
+            />
+            {isGenerator && cookieInput && (
+              <div className="mt-2 flex items-center justify-end gap-2">
+                <button onClick={() => { navigator.clipboard.writeText(cookieInput) }}
+                  className="flex items-center gap-1 border border-cyan-500/50 bg-cyan-950/40 px-3 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-cyan-400 hover:bg-cyan-600 hover:text-white cursor-pointer">
+                  <Copy className="h-3.5 w-3.5" /> COPIAR COOKIE
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {(gate.category === 'phone' || gate.category === 'plain') && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative overflow-hidden cyber-clip border border-yellow-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(234,179,8,0.1)]">
+              <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-yellow-400">
+                <Terminal className="h-3 w-3" /> TELÉFONO
+              </label>
+              <input
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
+                placeholder="> 10 dígitos"
+                className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-yellow-300 placeholder-yellow-900/50 focus:border-yellow-400 focus:outline-none border border-yellow-900/50"
+              />
+            </div>
+            <div className="relative overflow-hidden cyber-clip border border-emerald-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]">
+              <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                <Terminal className="h-3 w-3" /> MONTO
+              </label>
+              <input
+                value={montoInput}
+                onChange={(e) => setMontoInput(e.target.value)}
+                placeholder="> Monto (ej: 100)"
+                className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-emerald-300 placeholder-emerald-900/50 focus:border-emerald-400 focus:outline-none border border-emerald-900/50"
+              />
+            </div>
+          </div>
+        )}
+
         {gate.category === 'shopify' && (
           <div className="relative overflow-hidden cyber-clip border border-orange-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(249,115,22,0.1)]">
             <div className="flex items-center justify-between">
@@ -671,20 +787,22 @@ export default function GatePage() {
       </div>
 
       {/* ── Action Buttons ── */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <button onClick={handleStart} disabled={isRunning || insufficientCredits || !gate.apiUrl}
-          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-purple-950/40 border border-purple-500/50 px-6 py-4 font-mono-cyber font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-          <Play className="h-5 w-5" /> INICIAR
-        </button>
-        <button onClick={handleStop} disabled={!isRunning}
-          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 border border-orange-500/50 bg-black/60 px-6 py-4 font-mono-cyber font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-          <Square className="h-5 w-5" /> DETENER
-        </button>
-        <button onClick={() => setShowGenModal(true)}
-          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-orange-600 border border-purple-400 px-6 py-4 font-mono-cyber font-bold text-white transition-all hover:from-purple-500 hover:to-orange-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] cursor-pointer">
-          <Sparkles className="h-5 w-5 animate-pulse" /> GENERAR TARJETAS
-        </button>
-      </div>
+      {!isGenerator && (
+        <div className="flex flex-col md:flex-row gap-4">
+          <button onClick={handleStart} disabled={isRunning || insufficientCredits || !gate.apiUrl}
+            className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-purple-950/40 border border-purple-500/50 px-6 py-4 font-mono-cyber font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            <Play className="h-5 w-5" /> INICIAR
+          </button>
+          <button onClick={handleStop} disabled={!isRunning}
+            className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 border border-orange-500/50 bg-black/60 px-6 py-4 font-mono-cyber font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            <Square className="h-5 w-5" /> DETENER
+          </button>
+          <button onClick={() => setShowGenModal(true)}
+            className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-orange-600 border border-purple-400 px-6 py-4 font-mono-cyber font-bold text-white transition-all hover:from-purple-500 hover:to-orange-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] cursor-pointer">
+            <Sparkles className="h-5 w-5 animate-pulse" /> GENERAR TARJETAS
+          </button>
+        </div>
+      )}
 
       {/* ── Gate deshabilitado Warning ── */}
       {!gate.isActive && (

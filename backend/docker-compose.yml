@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    container_name: jillbot-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # CORS: only this origin may call the API from a browser. Comma-separated.
+      JILLBOT_ALLOWED_ORIGIN: "${JILLBOT_ALLOWED_ORIGIN:-https://www.jillchk.com}"
+      # API key (require ?key= / X-API-Key). Empty = no auth (origin-allowlist only).
+      JILLBOT_API_KEY: "${JILLBOT_API_KEY:-}"
+    volumes:
+      - /var/www/html/bot:/app

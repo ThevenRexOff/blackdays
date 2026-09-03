@@ -40,7 +40,7 @@ export async function POST(
 
     const { id } = await params
     const body = await request.json()
-    const { card, website, email, address, product } = body as { card: string; website?: string; email?: string; address?: Record<string, unknown> | false; product?: Record<string, unknown> | false }
+    const { card, website, email, address, product, cookie, phone, monto } = body as { card: string; website?: string; email?: string; address?: Record<string, unknown> | false; product?: Record<string, unknown> | false; cookie?: string; phone?: string; monto?: string }
 
     if (!card) {
       return NextResponse.json({ error: 'Card data required', status: 'error' }, { status: 400 })
@@ -143,6 +143,9 @@ export async function POST(
             email: email || '',
             address: address || false,
             product: product || false,
+            cookie: cookie || '',
+            phone: phone || '',
+            monto: monto || '',
           }),
           signal: AbortSignal.timeout(180000), // 3 minutos para evitar timeouts
         })

@@ -1,0 +1,7 @@
+curl_cffi
+beautifulsoup4
+faker
+cryptography
+requests
+textual
+Pillow

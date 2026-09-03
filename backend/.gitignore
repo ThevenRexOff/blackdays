@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Secrets / env
+**/config.env
+Model/config.env
+.env
+.env.*
+*.session
+ccs.txt
+cookies.txt
+
+# Proxy / runtime data files
+**/proxy.txt
+**/proxy.txt.bak
+**/proxy*.txt
+**/proxies*.txt
+
+# Runtime artifacts
+responses/
+output/
+**/output/
+samples/
+**/samples/
+*.log
+gate_log.txt
+poll.lock
+address_debug.html
+debug_payment_method.html
+*.bak
+
+# Legacy / superseded (moved to Python apis + gates)
+amazon_gateway/
+index.php
+php/shopify_gate.php
+php/composer.json
+php/composer.lock
+php/cache_geo.json
