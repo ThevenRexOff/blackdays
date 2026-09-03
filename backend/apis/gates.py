@@ -67,15 +67,10 @@ def _run_one(cc_parts: list, bin_data: dict, gate: str, params: dict) -> dict:
     ctx = {}
     extra = {}
     proxy = (params or {}).get('proxy') or ''
-    region = (params or {}).get('region') or _GATE_REGION.get(gate, '')
-    # No explicit proxy -> pull one for the gate's region.
-    if not proxy and region:
-        proxy = get_proxy(region)
     cookie = (params or {}).get('cookie') or ''
+    # Amazon gate uses cookie directly - no proxy needed
     if gate == 'amz' and cookie:
         ctx['cookie'] = cookie
-        if proxy:
-            ctx['proxy'] = proxy
     if gate in ('bl', 'pd', 'zb', 'ps') and proxy:
         ctx['proxy'] = proxy
     if gate == 'shopify':
