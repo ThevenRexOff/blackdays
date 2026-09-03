@@ -808,22 +808,24 @@ export default function GatePage() {
       </div>
 
       {/* ── Action Buttons ── */}
-      {!isGenerator && (
-        <div className="flex flex-col md:flex-row gap-4">
-          <button onClick={handleStart} disabled={isRunning || insufficientCredits || !gate.apiUrl}
-            className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-purple-950/40 border border-purple-500/50 px-6 py-4 font-mono-cyber font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-            <Play className="h-5 w-5" /> INICIAR
-          </button>
-          <button onClick={handleStop} disabled={!isRunning}
-            className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 border border-orange-500/50 bg-black/60 px-6 py-4 font-mono-cyber font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-            <Square className="h-5 w-5" /> DETENER
-          </button>
-          <button onClick={() => setShowGenModal(true)}
-            className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-orange-600 border border-purple-400 px-6 py-4 font-mono-cyber font-bold text-white transition-all hover:from-purple-500 hover:to-orange-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] cursor-pointer">
-            <Sparkles className="h-5 w-5 animate-pulse" /> GENERAR TARJETAS
-          </button>
-        </div>
-      )}
+      <div className="flex flex-col md:flex-row gap-4">
+        {!isGenerator && (
+          <>
+            <button onClick={handleStart} disabled={isRunning || insufficientCredits || !gate.apiUrl}
+              className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-purple-950/40 border border-purple-500/50 px-6 py-4 font-mono-cyber font-bold text-purple-400 transition-all hover:bg-purple-600 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              <Play className="h-5 w-5" /> INICIAR
+            </button>
+            <button onClick={handleStop} disabled={!isRunning}
+              className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 border border-orange-500/50 bg-black/60 px-6 py-4 font-mono-cyber font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              <Square className="h-5 w-5" /> DETENER
+            </button>
+          </>
+        )}
+        <button onClick={() => setShowGenModal(true)}
+          className="group cyber-clip-alt flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-orange-600 border border-purple-400 px-6 py-4 font-mono-cyber font-bold text-white transition-all hover:from-purple-500 hover:to-orange-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] cursor-pointer">
+          <Sparkles className="h-5 w-5 animate-pulse" /> GENERAR TARJETAS
+        </button>
+      </div>
 
       {/* ── Gate deshabilitado Warning ── */}
       {!gate.isActive && (
