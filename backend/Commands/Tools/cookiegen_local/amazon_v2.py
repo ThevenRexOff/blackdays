@@ -517,22 +517,18 @@ async def create_email(country_code="US", max_attempts=None):
     session → fresh proxy exit IP) when Amazon transiently rejects the register
     POST (e.g. the 404 rate-limit page)."""
     if max_attempts is None:
-        max_attempts = 3  # registration retries per account (1 = no retry)
+        max_attempts = 7  # more retries — some proxies get captcha/timeout
     for attempt in range(1, max_attempts + 1):
         if attempt > 1:
-            # Amazon's "We've detected unusual activity" is a transient
-            # velocity flag: back off longer between attempts so the proxy pool
-            # rotates to a clean exit IP before retrying.
-            delay = random.uniform(2, 4) if attempt == 2 else random.uniform(20, 40)
-            log.info(f"Reintento {attempt}/{max_attempts} en {delay:.0f}s (nueva IP/email)")
+            delay = random.uniform(1, 3) if attempt == 2 else random.uniform(4, 8)
+            log.info(f"Reintento {attempt}/{max_attempts} en {delay:.0f}s")
             await asyncio.sleep(delay)
         result = await _create_email_once(country_code)
         if result and result != "captcha":
             return result
         if result == "captcha":
-            # Saltar a un backoff más largo (la IP/FP ya están quemadas).
-            delay = random.uniform(20, 40)
-            log.info(f"Reintento {attempt}/{max_attempts} en {delay:.0f}s (nueva IP/email)")
+            delay = random.uniform(8, 15)
+            log.info(f"Captcha detectado — reintento {attempt}/{max_attempts} en {delay:.0f}s")
             await asyncio.sleep(delay)
         else:
             log.warn(f"Intento {attempt}/{max_attempts} fallido")
