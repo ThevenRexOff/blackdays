@@ -221,11 +221,10 @@ export default function GatePage() {
     const processCard = async (card: string, index: number): Promise<void> => {
       if (stopRef.current) return
       try {
-        const res = await fetch('/apis/gate', {
+        const res = await fetch(`/api/gates/${gate.id}/check`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            gate: (gate.apiUrl?.split('/').pop() || gate.id),
             card,
             website: shopifyConfig?.url || '',
             email: shopifyConfig?.sendAddress ? shopifyConfig.addrEmail : '',

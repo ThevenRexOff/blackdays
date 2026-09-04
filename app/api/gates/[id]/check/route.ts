@@ -129,6 +129,7 @@ export async function POST(
         error: 'Gate en desarrollo',
         status: 'error',
         code: 'NO_API_URL',
+        response: 'Gate en desarrollo — este gate aún no está configurado',
         card,
         creditsRemaining: user.credits,
       }, { status: 200 })
@@ -151,14 +152,25 @@ export async function POST(
         })
 
         if (!phpResponse.ok) {
-          return NextResponse.json({ error: 'Gate API error', status: 'error', card }, { status: 200 })
+          return NextResponse.json({ error: 'Gate API error', status: 'error', response: 'Gate API error — verifica la API del gate', card }, { status: 200 })
         }
 
-        const result = await phpResponse.json() as { status: 'live' | 'dead'; response?: string; time_taken?: number;[key: string]: unknown }
-        resultStatus = result.status
-        phpResponseData = { response: result.response, time_taken: result.time_taken }
+        const result = await phpResponse.json() as { status?: string | boolean; response?: string; error?: string; code?: string; time_taken?: number; [key: string]: unknown }
+        const phpStatus = result.status
+        // Normalize backend status to frontend 'live' / 'dead' / 'error'
+        if (phpStatus === false || phpStatus === 'error' || (typeof phpStatus === 'string' && phpStatus.toLowerCase().includes('error'))) {
+          resultStatus = 'error'
+        } else if (phpStatus === 'live' || phpStatus === 'Approved ✅' || phpStatus === 'Live Card 🟢' || phpStatus === 'success') {
+          resultStatus = 'live'
+        } else {
+          resultStatus = 'dead'
+        }
+        phpResponseData = {
+          response: String(result.response ?? result.error ?? '') || (phpStatus === false ? 'Error de la API' : undefined),
+          time_taken: result.time_taken,
+        }
       } catch {
-        return NextResponse.json({ error: 'Gate API timeout', status: 'error', card }, { status: 200 })
+        return NextResponse.json({ error: 'Gate API timeout', status: 'error', response: 'Gate API timeout — verifica tu conexión', card }, { status: 200 })
       }
     }
 
