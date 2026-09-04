@@ -778,25 +778,27 @@ export default function GatePage() {
             </div>
             <div className="relative overflow-hidden cyber-clip border border-emerald-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]">
               <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
-                <Terminal className="h-3 w-3" /> MONTO
-              </label>
-              <select
-                value={montoInput}
-                onChange={(e) => setMontoInput(e.target.value)}
-                className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-emerald-300 placeholder-emerald-900/50 focus:border-emerald-400 focus:outline-none border border-emerald-900/50"
-              >
-                <option value="">-- Selecciona monto --</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="50">50</option>
-                <option value="80">80</option>
-                <option value="100">100</option>
-                <option value="150">150</option>
-                <option value="200">200</option>
-                <option value="300">300</option>
-                <option value="500">500</option>
-              </select>
+                 <Terminal className="h-3 w-3" /> MONTO
+               </label>
+               {(() => {
+                 const gateName = gate.apiUrl?.split('/').pop() || ''
+                 const montosMap: Record<string, string[]> = {
+                   'telcel': ['20', '30', '50', '80', '100', '150', '200', '300', '500'],
+                   'zb': ['10', '20', '30', '50', '80', '100', '150', '200', '300', '500'],
+                   'ps': ['50', '100', '200', '300', '500'],
+                 }
+                 const montos = montosMap[gateName] || ['10', '20', '30', '50', '100', '200', '300', '500']
+                 return (
+                   <select
+                     value={montoInput}
+                     onChange={(e) => setMontoInput(e.target.value)}
+                     className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-emerald-300 placeholder-emerald-900/50 focus:border-emerald-400 focus:outline-none border border-emerald-900/50"
+                   >
+                     <option value="">-- Selecciona monto --</option>
+                     {montos.map((m) => <option key={m} value={m}>{m}</option>)}
+                   </select>
+                 )
+               })()}
             </div>
           </div>
         )}

