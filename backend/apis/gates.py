@@ -7,7 +7,6 @@
 #  Every gate checks a SINGLE card.
 # ══════════════════════════════════════════════════════════════════════════
 import os
-import re
 import time
 
 from apis.core import load_env, parse_card, bin_info, get_params
@@ -130,43 +129,6 @@ def _is_infra_error(status) -> bool:
     return 'error' in s or 'unknown' in s or s in ('', 'false')
 
 
-def _looks_like_json(text: str) -> bool:
-    """True when the tail of a gate message is a raw JSON error bundle
-    (e.g. MercadoPago '{"cause":[{...}]}'). These should not be shown raw to users."""
-    if not text:
-        return False
-    # Scan every fragment separated by '|' for a JSON object/array.
-    for frag in re.split(r'[|]', text):
-        frag = frag.strip()
-        if frag.startswith('{') or frag.startswith('['):
-            return True
-    return False
-
-
-def _sanitize_gate_response(gate: str, result: dict, card: str, params: dict) -> dict:
-    """Hide raw gateway JSON errors from the user-facing response and log the
-    real detail to the admins instead."""
-    if result.get('status') != 'Declined ❌':
-        return result
-    resp = result.get('response') or ''
-    if not _looks_like_json(resp):
-        return result
-
-    # Forward the real (raw) detail to the admin bot as a log.
-    try:
-        from apis.telegram_alert import send_alert
-        user = (params or {}).get('user') or (params or {}).get('username')
-        detail = f"card: {_mask_card(card)}\n{resp}"
-        send_alert(f"Gate {gate}: decline con JSON del gateway",
-                   detail, level='WARN', gate=gate,
-                   trace=f"user: {user or '-'}\nrespuesta real: {resp}")
-    except Exception:
-        pass
-
-    result['response'] = 'Declined ❌ | Contacta con los administradores para más detalles.'
-    return result
-
-
 def gate_run(params: dict) -> dict:
     t0 = time.time()
 
@@ -221,7 +183,6 @@ def gate_run(params: dict) -> dict:
         else:
             result = _done(_run_one(parsed['parts'], bin_info(parsed['parts'][0]), gate, extra), card)
 
-        result = _sanitize_gate_response(gate, result, card, params)
         if _is_infra_error(result.get('status')):
             _notify_gate_error(gate, result, card=card, params=params)
         return result
