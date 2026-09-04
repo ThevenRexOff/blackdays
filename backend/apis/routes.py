@@ -54,6 +54,7 @@ ROUTES = [
     _route('GET', '/apis/gate/sfy', 'Shopify Checkout — needs website (alias: shopify)', {'card': 'cc|mm|yy|cvv', 'website': 'https://tienda.com', 'address': 'optional JSON', 'email': 'optional', 'product': 'optional JSON', 'proxy': 'optional'}, gate_run),
     _route('GET', '/apis/gate/shopify', 'Shopify Checkout — needs website', {'card': 'cc|mm|yy|cvv', 'website': 'https://tienda.com', 'address': 'optional JSON', 'email': 'optional', 'product': 'optional JSON', 'proxy': 'optional'}, gate_run),
     _route('POST', '/apis/gate', 'Run any gate (JSON body: gate, card, phone, monto, cookie)', {'body': '{"gate":"mj","card":"...|..|..|.."}'}, gate_run),
+
 ]
 
 
@@ -64,6 +65,7 @@ def match(path: str):
         return ROUTES[0]['handler'], None
     if path.rstrip('/') in ('/apis/routes', '/apis/health'):
         return (ROUTES[1]['handler'], None) if path.rstrip('/') == '/apis/routes' else (ROUTES[2]['handler'], None)
+    # Original /apis/gate/ pattern
     prefix = '/apis/gate/'
     if path.startswith(prefix):
         name = path[len(prefix):].split('/')[0] or None

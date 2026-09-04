@@ -225,7 +225,7 @@ export default function GatePage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            gate: gate.id,
+            gate: (gate.apiUrl?.split('/').pop() || gate.id),
             card,
             website: shopifyConfig?.url || '',
             email: shopifyConfig?.sendAddress ? shopifyConfig.addrEmail : '',
