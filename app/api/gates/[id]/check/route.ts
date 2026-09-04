@@ -165,8 +165,11 @@ export async function POST(
         } else {
           resultStatus = 'dead'
         }
+        // Extract the actual message: PHP gates may use 'response', 'error', 'message', 'description', etc.
+        const rawMsg = result.response ?? result.error ?? result.message ?? result.description
+        const respMsg = rawMsg !== undefined && rawMsg !== null ? String(rawMsg) : ''
         phpResponseData = {
-          response: String(result.response ?? result.error ?? '') || (phpStatus === false ? 'Error de la API' : undefined),
+          response: respMsg || (resultStatus === 'error' ? 'Error al procesar la tarjeta' : undefined),
           time_taken: result.time_taken,
         }
       } catch {
