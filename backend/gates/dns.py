@@ -1,6 +1,6 @@
 # Pure gate motor for 'dns' — no Telegram-bot dependency.
 
-import re, os, json, random, string, types, hashlib, base64
+import re, os, json, random, string, types, hashlib, base64, unicodedata
 
 from faker import Faker
 
@@ -42,9 +42,18 @@ _LIVE_KEYS = ('insufficient', 'security_code_incorrect', 'cc_rejected_bad_filled
 
 _f = Faker('es_MX')
 
+def _ascii(text: str) -> str:
+    """Strip accents/diacritics so names are ASCII-safe for MercadoPago
+    (avoids 'the first_name is invalid' rejections)."""
+    text = unicodedata.normalize('NFD', text)
+    return ''.join(c for c in text if unicodedata.category(c) != 'Mn').strip()
+
 def _fake_profile() -> types.SimpleNamespace:
-    p = _f.profile()
-    fn, ln = (p['name'].split()[0], p['name'].split()[-1])
+    # Use first_name()/last_name() (avoid titles like 'Sra.', 'Ing.') and take
+    # only the first token (Faker es_MX yields compound names like 'José María').
+    # Strip accents so cardholder.name is valid for MercadoPago.
+    fn = _ascii(_f.first_name()).split()[0]
+    ln = _ascii(_f.last_name()).split()[0]
     slug = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=random.randint(4, 7)))
     return types.SimpleNamespace(f_name=fn, l_name=ln, card_name=f'{slug} {fn[:2].upper()}{ln[:2].upper()}', mail=f'{fn.lower()}{random.randint(10, 999)}@{random.choice(_EMAIL_DOMS)}', phone=f'+52{random.randint(5500000000, 5599999999)}', zipcode=f'{random.randint(10000, 99999)}')
 
