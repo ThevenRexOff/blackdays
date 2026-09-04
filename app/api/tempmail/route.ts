@@ -10,6 +10,10 @@ const BROWSER_HEADERS: HeadersInit = {
   'Accept-Language': 'en-US,en;q=0.9',
 }
 
+// mail.tm blocks Vercel datacenter IPs (HTTP 500). We proxy it through the VPS,
+// whose IP is not blocked. Vercel -> VPS -> api.mail.tm.
+const MAILTM_PROXY = 'http://169.58.148.219:8080/apis/tmail_proxy'
+
 async function safeFetch<T = Record<string, unknown>>(url: string, options: RequestInit = {}): Promise<T> {
   const merged: RequestInit = {
     ...options,
@@ -52,58 +56,44 @@ export async function POST(req: NextRequest) {
   const { service, action, params } = body
 
   try {
-    // ─── mail.tm ───────────────────────────────────────────────────
+    // ─── mail.tm (proxied through VPS — see MAILTM_PROXY) ────────────
     if (service === 'mailtm') {
-      const base = 'https://api.mail.tm'
+      const proxyRes = await fetch(MAILTM_PROXY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, params }),
+        signal: AbortSignal.timeout(20_000),
+      })
+      const proxyData = (await proxyRes.json()) as Record<string, unknown>
+
+      if (!proxyData.status) {
+        throw new Error((proxyData.error as string) || `Error de mail.tm vía proxy: HTTP ${proxyRes.status}`)
+      }
 
       if (action === 'domains') {
-        const data = await safeFetch<{ 'hydra:member': { domain: string; isActive: boolean }[] }>(`${base}/domains`)
-        return NextResponse.json({ domains: data['hydra:member'] ?? [] })
+        const d = (proxyData.domains ?? []) as { domain: string; isActive: boolean }[]
+        return NextResponse.json({ domains: d })
       }
 
       if (action === 'generate') {
-        const { domain: selectedDomain } = params as { domain?: string }
-        const domData = await safeFetch<{ 'hydra:member': { domain: string; isActive: boolean }[] }>(`${base}/domains`)
-        const members = domData['hydra:member'] ?? []
-        const domain = selectedDomain && members.some((d) => d.domain === selectedDomain)
-          ? selectedDomain
-          : members.find((d) => d.isActive)?.domain ?? members[0]?.domain
-        if (!domain) throw new Error(`${base}: no hay dominios disponibles`)
-
-        const login = Math.random().toString(36).substring(2, 12)
-        const password = Math.random().toString(36).substring(2, 18)
-        const email = `${login}@${domain}`
-
-        await safeFetch(`${base}/accounts`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address: email, password }),
+        return NextResponse.json({
+          email: proxyData.email,
+          token: proxyData.token,
+          password: proxyData.password,
+          domain: proxyData.domain,
+          type: 'jwt',
         })
-
-        const tokenData = await safeFetch<{ token: string }>(`${base}/token`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address: email, password }),
-        })
-
-        return NextResponse.json({ email, token: tokenData.token, password, domain, type: 'jwt' })
       }
 
       if (action === 'inbox') {
-        const { token } = params as { token: string }
-        const data = await safeFetch<{ 'hydra:member': Record<string, unknown>[] }>(`${base}/messages`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        return NextResponse.json({ messages: data['hydra:member'] ?? [], type: 'jwt' })
+        return NextResponse.json({ messages: proxyData.messages ?? [], type: 'jwt' })
       }
 
       if (action === 'read') {
-        const { token, id } = params as { token: string; id: string }
-        const data = await safeFetch(`${base}/messages/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        return NextResponse.json({ message: data, type: 'jwt' })
+        return NextResponse.json({ message: proxyData.message, type: 'jwt' })
       }
+
+      throw new Error(`Acción mail.tm no soportada: ${action}`)
     }
 
     // ─── Guerrilla Mail ────────────────────────────────────────────

@@ -3,7 +3,7 @@
 # ══════════════════════════════════════════════════════════════════════════
 import inspect
 
-from apis.tools import cmd_bin, cmd_fake, cmd_ip, cmd_phone, cmd_gen, cmd_sk, cmd_site, cmd_tmail, cmd_amz_generator
+from apis.tools import cmd_bin, cmd_fake, cmd_ip, cmd_phone, cmd_gen, cmd_sk, cmd_site, cmd_tmail, cmd_amz_generator, cmd_tmail_proxy
 from apis.gates import gate_run
 
 TOOLS = {
@@ -54,6 +54,7 @@ ROUTES = [
     _route('GET', '/apis/gate/sfy', 'Shopify Checkout — needs website (alias: shopify)', {'card': 'cc|mm|yy|cvv', 'website': 'https://tienda.com', 'address': 'optional JSON', 'email': 'optional', 'product': 'optional JSON', 'proxy': 'optional'}, gate_run),
     _route('GET', '/apis/gate/shopify', 'Shopify Checkout — needs website', {'card': 'cc|mm|yy|cvv', 'website': 'https://tienda.com', 'address': 'optional JSON', 'email': 'optional', 'product': 'optional JSON', 'proxy': 'optional'}, gate_run),
     _route('POST', '/apis/gate', 'Run any gate (JSON body: gate, card, phone, monto, cookie)', {'body': '{"gate":"mj","card":"...|..|..|.."}'}, gate_run),
+    _route('POST', '/apis/tmail_proxy', 'Proxy mail.tm from VPS (Vercel IPs are blocked by api.mail.tm)', {'body': '{"action":"domains|generate|inbox|read","params":{}}'}, cmd_tmail_proxy),
 
 ]
 
