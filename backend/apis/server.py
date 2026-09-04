@@ -136,7 +136,14 @@ class ApiHandler(BaseHTTPRequestHandler):
                 result = {'status': False, 'error': 'Handler returned nothing'}
             self._send(200, result)
         except Exception as exc:
-            self._send(500, {'status': False, 'error': str(exc)[:500], 'trace': traceback.format_exc().splitlines()[-3:]})
+            trace = traceback.format_exc()
+            try:
+                from apis.telegram_alert import send_alert
+                send_alert(f"API {self.command} {parsed.path} → 500",
+                           str(exc)[:1500], level='ERROR', trace=trace[-3000:])
+            except Exception:
+                pass
+            self._send(500, {'status': False, 'error': str(exc)[:500], 'trace': trace.splitlines()[-3:]})
 
     def do_GET(self):
         self._handle()

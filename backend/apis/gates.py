@@ -113,6 +113,22 @@ def normalized(r: dict) -> dict:
     return {'status': 'Approved ✅' if success else 'Declined ❌', 'response': resp}
 
 
+def _mask_card(card: str) -> str:
+    digits = ''.join(ch for ch in (card or '') if ch.isdigit())
+    if len(digits) >= 10:
+        return f"{digits[:6]}...{digits[-4:]}"
+    return (card or '')[:16]
+
+
+def _is_infra_error(status) -> bool:
+    """True when the gate failed at infrastructure level (vs a normal decline).
+    Normal outcomes (Approved/Declined/Live/Dead) never trigger admin alerts."""
+    if status is False:
+        return True
+    s = str(status or '').strip().lower()
+    return 'error' in s or 'unknown' in s or s in ('', 'false')
+
+
 def gate_run(params: dict) -> dict:
     t0 = time.time()
 
@@ -146,26 +162,50 @@ def gate_run(params: dict) -> dict:
     if not parsed.get('status'):
         return {'status': False, 'error': parsed.get('raise')}
 
-    if gate == 'telcel':
-        return _done(gate_telcel(parsed, extra), card)
-    if gate == 'netflix':
-        return _done(gate_netflix(parsed), card)
-    if gate == 'disney':
-        return _done(gate_disney(parsed), card)
-    if gate == 'amazon':
-        if not cookie:
-            return {'status': False, 'error': 'Amazon gate requires a cookie parameter'}
-        return _done(_run_one(parsed['parts'], bin_info(parsed['parts'][0]), 'amz', extra), card)
+    try:
+        if gate == 'telcel':
+            result = _done(gate_telcel(parsed, extra), card)
+        elif gate == 'netflix':
+            result = _done(gate_netflix(parsed), card)
+        elif gate == 'disney':
+            result = _done(gate_disney(parsed), card)
+        elif gate == 'amazon':
+            if not cookie:
+                result = {'status': False, 'error': 'Amazon gate requires a cookie parameter'}
+            else:
+                result = _done(_run_one(parsed['parts'], bin_info(parsed['parts'][0]), 'amz', extra), card)
+        elif gate == 'shopify':
+            if not (params.get('website') or params.get('site') or params.get('url')):
+                result = {'status': 'error', 'code': 'NO_API_URL', 'card': card,
+                          'time_taken': round(time.time() - t0, 2)}
+            else:
+                result = _done(_run_one(parsed['parts'], bin_info(parsed['parts'][0]), 'shopify', params), card)
+        else:
+            result = _done(_run_one(parsed['parts'], bin_info(parsed['parts'][0]), gate, extra), card)
 
-    if gate == 'shopify':
-        if not (params.get('website') or params.get('site') or params.get('url')):
-            return {'status': 'error', 'code': 'NO_API_URL', 'card': card,
-                    'time_taken': round(time.time() - t0, 2)}
-        result = _run_one(parsed['parts'], bin_info(parsed['parts'][0]), 'shopify', params)
-        return _done(result, card)
+        if _is_infra_error(result.get('status')):
+            _notify_gate_error(gate, result, card=card, params=params)
+        return result
+    except Exception as exc:
+        import traceback as _tb
+        result = {'status': False, 'error': f'Gate [{gate}] internal error: {exc}', 'card': card,
+                  'time_taken': round(time.time() - t0, 2)}
+        _notify_gate_error(gate, result, card=card, params=params,
+                           trace=_tb.format_exc())
+        return result
 
-    result = _run_one(parsed['parts'], bin_info(parsed['parts'][0]), gate, extra)
-    return _done(result, card)
+
+def _notify_gate_error(gate: str, result: dict, *, card: str = '', params: dict = None, trace: str = ''):
+    """Notify admins via Telegram when a gate returns an infrastructure error."""
+    try:
+        from apis.telegram_alert import notify_gate_error
+        body = dict(result)
+        body.pop('card', None)  # keep the full card private in the alert body
+        user = (params or {}).get('user') or (params or {}).get('username') or ''
+        notify_gate_error(gate, body, user=user, card_mask=_mask_card(card), trace=trace)
+    except Exception:
+        # Never let a notification failure break the gate response.
+        pass
 
 
 def gate_telcel(parsed: dict, extra: dict) -> dict:
