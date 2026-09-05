@@ -22,6 +22,15 @@ COUNTRIES = {
 def _generate_cookie(country: str, proxy: str = None) -> dict:
     try:
         from account_creator import AmazonAccountCreator
+        # Prefer a single shared residential proxy (AMZN_PROXY / REQ_PROXY) over
+        # the per-country pool. The pool files (php/proxies_<COUNTRY>.txt) only
+        # have entries for US and MX, and even those are geo-locked — a single
+        # non-geo residential proxy (one IP per request) works for every
+        # amazon.<tld> region. The Archive version uses this exact pattern.
+        if not proxy:
+            proxy = os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or ''
+            if proxy:
+                proxy = proxy.strip()
         if not proxy:
             try:
                 from api.proxies import get_proxy

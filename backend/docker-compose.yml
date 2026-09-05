@@ -10,5 +10,12 @@ services:
       JILLBOT_ALLOWED_ORIGIN: "${JILLBOT_ALLOWED_ORIGIN:-https://www.jillchk.com}"
       # API key (require ?key= / X-API-Key). Empty = no auth (origin-allowlist only).
       JILLBOT_API_KEY: "${JILLBOT_API_KEY:-}"
+      # Amazon cookie generator: shared residential proxy used for every region.
+      # The Archive version uses REQ_PROXY directly; we keep both names so the
+      # proxy provider config can use either.
+      AMZN_PROXY: "${AMZN_PROXY:-}"
+      REQ_PROXY: "${REQ_PROXY:-}"
+      # capsolver key (used by the bl + disney gates). Read inside those gates.
+      CAPSOLVER_KEY: "${CAPSOLVER_KEY:-}"
     volumes:
       - /var/www/html/bot:/app
