@@ -147,7 +147,10 @@ def cmd_tmail(params: dict) -> dict:
 
 def cmd_amz_generator(params: dict) -> dict:
     """Amazon account/cookie generator. Requires `country` (US/MX/CA/…).
-    Uses a US-region proxy by default; an explicit `proxy` overrides it."""
+    Always uses the global AMZN_PROXY/REQ_PROXY — a single non-geo residential
+    proxy covers every amazon.<tld> region, so we never fall back to the
+    per-country pool (those are geo-locked proxies that only work for one
+    region and Amazon rate-limits them much faster)."""
     country, proxy = get_params(params, {}, 'country', 'proxy')
     country = (country or '').strip().upper()
     if not country:
@@ -157,13 +160,10 @@ def cmd_amz_generator(params: dict) -> dict:
     if country not in COUNTRIES:
         return {'status': False, 'error':
                 f'Invalid country [{country}]. Supported: {", ".join(COUNTRIES.keys())}'}
-    # Prefer the global AMZN_PROXY/REQ_PROXY over the per-country pool — a
-    # single non-geo residential proxy covers all amazon.<tld> regions.
+    # Global proxy only — never the per-country pool. An explicit `proxy` query
+    # parameter still wins for one-off testing.
     if not proxy:
         proxy = os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or ''
-    if not proxy:
-        from api.proxies import get_proxy
-        proxy = get_proxy(country) or None
     result = _generate_cookie(country, proxy)
     if not result or not result.get('status'):
         return {'status': False, 'error':

@@ -43,8 +43,8 @@ def _generate_cookie(country: str, proxy: str = None) -> dict:
     """
     try:
         import amazon_v2
-        # Prefer a single shared residential proxy (AMZN_PROXY / REQ_PROXY) over
-        # the per-country pool — same pattern as Archive/.env.
+        # Global proxy only — never the per-country pool. Archive/.env sets
+        # REQ_PROXY to one non-geo residential proxy that covers every region.
         proxy = (proxy or os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or '').strip()
         amazon_v2._PROXY_URL = proxy or ''
 
