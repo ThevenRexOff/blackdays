@@ -147,10 +147,14 @@ def cmd_tmail(params: dict) -> dict:
 
 def cmd_amz_generator(params: dict) -> dict:
     """Amazon account/cookie generator. Requires `country` (US/MX/CA/…).
-    Always uses the global AMZN_PROXY/REQ_PROXY — a single non-geo residential
-    proxy covers every amazon.<tld> region, so we never fall back to the
-    per-country pool (those are geo-locked proxies that only work for one
-    region and Amazon rate-limits them much faster)."""
+    Proxy resolution order:
+      1. Explicit `proxy` query param (one-off testing)
+      2. Per-country pool (php/proxies_<COUNTRY>.txt) — used when present, so
+         geo-locked proxies can serve regions that need a specific exit IP
+         (e.g. amazon.co.jp rejects non-JP residential IPs).
+      3. Global AMZN_PROXY/REQ_PROXY — the single non-geo residential proxy
+         that covers every other region.
+    """
     country, proxy = get_params(params, {}, 'country', 'proxy')
     country = (country or '').strip().upper()
     if not country:
@@ -160,8 +164,11 @@ def cmd_amz_generator(params: dict) -> dict:
     if country not in COUNTRIES:
         return {'status': False, 'error':
                 f'Invalid country [{country}]. Supported: {", ".join(COUNTRIES.keys())}'}
-    # Global proxy only — never the per-country pool. An explicit `proxy` query
-    # parameter still wins for one-off testing.
+    # Per-country pool wins so geo-locked proxies can target a specific region.
+    # If the pool has no entry for the country, fall back to the global proxy.
+    if not proxy:
+        from api.proxies import get_proxy
+        proxy = get_proxy(country)
     if not proxy:
         proxy = os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or ''
     result = _generate_cookie(country, proxy)
