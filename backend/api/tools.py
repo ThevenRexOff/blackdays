@@ -149,11 +149,11 @@ def cmd_amz_generator(params: dict) -> dict:
     """Amazon account/cookie generator. Requires `country` (US/MX/CA/…).
     Proxy resolution order:
       1. Explicit `proxy` query param (one-off testing)
-      2. Per-country pool (php/proxies_<COUNTRY>.txt) — used when present, so
-         geo-locked proxies can serve regions that need a specific exit IP
-         (e.g. amazon.co.jp rejects non-JP residential IPs).
-      3. Global AMZN_PROXY/REQ_PROXY — the single non-geo residential proxy
-         that covers every other region.
+      2. JP only — php/proxies_jp.txt regional pool (amazon.co.jp rejects
+         non-JP residential IPs, so JP gets its own geo-locked proxy).
+      3. Every other country — global AMZN_PROXY/REQ_PROXY from the env,
+         the single non-geo residential proxy that covers amazon.com,
+         amazon.com.mx, amazon.ca, amazon.co.uk, amazon.de, etc.
     """
     country, proxy = get_params(params, {}, 'country', 'proxy')
     country = (country or '').strip().upper()
@@ -164,11 +164,12 @@ def cmd_amz_generator(params: dict) -> dict:
     if country not in COUNTRIES:
         return {'status': False, 'error':
                 f'Invalid country [{country}]. Supported: {", ".join(COUNTRIES.keys())}'}
-    # Per-country pool wins so geo-locked proxies can target a specific region.
-    # If the pool has no entry for the country, fall back to the global proxy.
-    if not proxy:
+    # JP reads its own regional pool; every other country uses the global
+    # proxy from the env. No fallback to the per-country pool for non-JP
+    # so the proxy behaves as a single non-geo residential endpoint.
+    if not proxy and country == 'JP':
         from api.proxies import get_proxy
-        proxy = get_proxy(country)
+        proxy = get_proxy('JP')
     if not proxy:
         proxy = os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or ''
     result = _generate_cookie(country, proxy)
