@@ -24,7 +24,7 @@ def _generate_cookie(country: str, proxy: str = None) -> dict:
         from account_creator import AmazonAccountCreator
         if not proxy:
             try:
-                from apis.proxies import get_proxy
+                from api.proxies import get_proxy
                 proxy = get_proxy(country) or None
             except Exception:
                 proxy = None

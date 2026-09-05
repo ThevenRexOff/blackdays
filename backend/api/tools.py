@@ -1,15 +1,17 @@
 # ══════════════════════════════════════════════════════════════════════════
-#  Tool endpoints: /bin /fake /ip /phone /gen /sk /site /tmail
-#  Each handler receives the merged params dict and returns a JSON-serializable dict.
+#  JILL_BOT API — tool handlers: /bin /fake /ip /phone /gen /sk /site /tmail
+#  Each handler receives the merged params dict and returns a JSON-serializable
+#  dict. Pure business logic — no Flask request objects here.
 # ══════════════════════════════════════════════════════════════════════════
-import json
 import random
 import string
 from types import SimpleNamespace
 
 import requests
 
-from apis.core import load_env, ns_to_dict, get_params
+from api.core import ns_to_dict, get_params
+
+from config import load_env
 
 _TMAIL_API = 'https://api.mail.tm'
 
@@ -154,7 +156,7 @@ def cmd_amz_generator(params: dict) -> dict:
     if country not in COUNTRIES:
         return {'status': False, 'error':
                 f'Invalid country [{country}]. Supported: {", ".join(COUNTRIES.keys())}'}
-    from apis.proxies import get_proxy
+    from api.proxies import get_proxy
     proxy = (proxy or get_proxy(country)) or None
     result = _generate_cookie(country, proxy)
     if not result or not result.get('status'):

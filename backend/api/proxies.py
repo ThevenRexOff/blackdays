@@ -1,8 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════
-#  Proxy source by region. Each region reads from php/proxies_<region>.txt
-#  (fallback to php/proxies.txt when the region file is missing).
-#  get_proxy(region) returns a single usable proxy URL, rotating per call
-#  so concurrent checks spread across the pool.
+#  JILL_BOT API — proxy source by region. Each region reads from
+#  php/proxies_<region>.txt (fallback to php/proxies.txt when the region file
+#  is missing). get_proxy(region) returns a single usable proxy URL, rotating
+#  per call so concurrent checks spread across the pool.
 # ══════════════════════════════════════════════════════════════════════════
 import itertools
 import pathlib
@@ -13,7 +13,6 @@ _PHP_DIR = _ROOT / 'php'
 _LOCK = threading.Lock()
 _ROTATORS: dict = {}
 
-# region name -> default file (used when an unknown region is requested)
 _DEFAULT_REGION = 'us'
 
 

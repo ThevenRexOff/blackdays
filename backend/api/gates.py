@@ -1,16 +1,17 @@
 # ══════════════════════════════════════════════════════════════════════════
-#  Gate endpoints. Most gates share the `run_check(cc, bin_data, ctx)` contract.
+#  JILL_BOT API — gate orchestration.
 #  ─ /gate/mj /gate/mm /gate/wr /gate/br /gate/bl /gate/dns /gate/rc /gate/op
 #  ─ /gate/pd /gate/wu /gate/zb /gate/ps          (1-card, run_check)
 #  ─ /gate/amz /gate/amzg                         (Amazon — requires cookie)
 #  ─ /gate/tcl  (Telcel MX), /gate/em (Netflix), /gate/ds (Disney+)
-#  Every gate checks a SINGLE card.
+#  Every gate checks a SINGLE card. The actual engines live in gates/ and
+#  Commands/Gates/ — this module only routes, validates and normalizes.
 # ══════════════════════════════════════════════════════════════════════════
-import os
 import time
 
-from apis.core import load_env, parse_card, bin_info, get_params
-from apis.proxies import get_proxy
+from api.core import parse_card, bin_info, get_params
+
+from config import load_env
 
 _RUN_CHECK_GATES = {
     'mj':   'gates.mj',
@@ -36,12 +37,6 @@ _ALIASES = {
     'em': 'netflix', 'netflix': 'netflix',
     'ds': 'disney', 'disney': 'disney',
     'telmex': 'zb', 'bait': 'ps', 'sfy': 'shopify',
-}
-
-# Gate -> default proxy region. When no explicit `proxy` / `region` is given,
-# apis.proxies.get_proxy(region) picks a proxy from php/proxies_<region>.txt.
-_GATE_REGION = {
-    'bl': 'mx', 'pd': 'mx', 'zb': 'mx', 'ps': 'mx',
 }
 
 # Parameters each gate REQUIRES beyond `card`. Missing ones produce a 4xx.
@@ -198,7 +193,7 @@ def gate_run(params: dict) -> dict:
 def _notify_gate_error(gate: str, result: dict, *, card: str = '', params: dict = None, trace: str = ''):
     """Notify admins via Telegram when a gate returns an infrastructure error."""
     try:
-        from apis.telegram_alert import notify_gate_error
+        from api.telegram_alert import notify_gate_error
         body = dict(result)
         body.pop('card', None)  # keep the full card private in the alert body
         user = (params or {}).get('user') or (params or {}).get('username') or ''

@@ -1,38 +1,8 @@
 # ══════════════════════════════════════════════════════════════════════════
-#  Shared helpers for the JILL_BOT HTTP API.
+#  JILL_BOT API — shared request helpers.
+#  Pure functions, no Flask dependency, so gate/tool handlers stay testable.
 # ══════════════════════════════════════════════════════════════════════════
-import json
-import os
-import pathlib
 import re
-from types import SimpleNamespace
-
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-
-
-def load_env() -> None:
-    """Load Model/config.env + .env into os.environ (never overrides set vars)."""
-    for env_path in [ROOT / 'Model' / 'config.env', ROOT / '.env']:
-        try:
-            if not env_path.exists():
-                continue
-            for line in env_path.read_text(encoding='utf-8').splitlines():
-                line = line.strip()
-                if not line or line.startswith('#') or '=' not in line:
-                    continue
-                key, value = line.split('=', 1)
-                key = key.strip()
-                value = value.strip().strip('"').strip("'")
-                if key and os.getenv(key) is None:
-                    os.environ[key] = value
-        except Exception:
-            pass
-
-
-def api_key() -> str:
-    """Optional shared secret. When set, every request must send X-API-Key (or ?key=)."""
-    load_env()
-    return os.getenv('JILLBOT_API_KEY', '').strip()
 
 
 def ns_to_dict(obj) -> dict:
@@ -94,7 +64,7 @@ def bin_info(card_number: str) -> dict:
 
 
 def get_params(query: dict, body: dict = None, *names):
-    """Resolve a parameter from query string or JSON body (body wins)."""
+    """Resolve a parameter from a params dict / body (body wins)."""
     merged = dict(query)
     if body:
         merged.update(body)

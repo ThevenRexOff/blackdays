@@ -1,12 +1,11 @@
 # ══════════════════════════════════════════════════════════════════════════
-#  JILL_BOT HTTP API — apis/
-#  Exposes the bot's tools + gates as consumable HTTP endpoints (JSON).
-#
-#  Run:
-#      python3 apis/server.py --host 0.0.0.0 --port 8080
-#
-#  List every endpoint:
-#      GET /apis/routes
+#  WSGI entry point — for gunicorn / waitress / mod_wsgi:
+#      gunicorn 'wsgi:app' --bind 0.0.0.0:8080 --workers 2 --threads 8
 # ══════════════════════════════════════════════════════════════════════════
+from api import create_app
 
-__version__ = '1.0.0'
+app = create_app()
+
+if __name__ == '__main__':
+    from waitress import serve
+    serve(app, host='0.0.0.0', port=8080, threads=8, channel_timeout=600)

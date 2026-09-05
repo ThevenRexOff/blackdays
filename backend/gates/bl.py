@@ -10,7 +10,11 @@ from urllib.parse import quote as _q
 
 _GATEWAY = 'Disney+ MX'
 
-_CAPSOLVER_KEY = os.getenv('CAPSOLVER_KEY', 'CAP-58F53865F34208865D7D7E79078558F7EC2EE3DDD998E24DC5D186AE144FB373')
+# Capsolver key is loaded EXCLUSIVELY from env (CAPSOLVER_KEY) — no default.
+# The deploy must set this in Model/config.env or .env so the gate can solve
+# the reCAPTCHA. If unset, the gate fails fast with a clear error instead of
+# burning a captcha attempt with an empty/invalid key.
+_CAPSOLVER_KEY = os.getenv('CAPSOLVER_KEY', '').strip()
 
 class Disney:
     SDK_API_KEY = 'ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84'
@@ -40,7 +44,6 @@ class Disney:
 
     @staticmethod
     def parseCard(rawCard: str) -> dict:
-        print(rawCard)
         n, m, y, c = re.split('\\s*[|/]\\s*|\\s+', rawCard.strip())[:4]
         y = f'20{y}' if len(y) == 2 else y
         return {'number': n, 'month': m.zfill(2), 'year': y, 'cvv': c, 'type': Disney.CARD_TYPE_MAP.get(n[0], 'visa')}
@@ -225,6 +228,9 @@ def processDisneyFlow(cardInput: str, proxy=None, capsolver_key: str='', retries
         return {'status': False, 'message': f'[{_step}] {e}', 'card': f"{card['number']}|{card['month']}|{card['year']}|{card['cvv']}", 'retries': str(retries), 'gateway': 'Disney+ Plans Subscription'}
 
 def _checker(cc, binData, proxy=None):
+    if not _CAPSOLVER_KEY:
+        return {'status': False,
+                'raise': 'CAPSOLVER_KEY no configurada — define CAPSOLVER_KEY en Model/config.env o .env para usar este gate.'}
     try:
         card_input = f'{cc[0]}|{cc[1]}|{cc[2]}|{cc[3]}'
         r = processDisneyFlow(cardInput=card_input, proxy=proxy, capsolver_key=_CAPSOLVER_KEY)

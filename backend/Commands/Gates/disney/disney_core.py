@@ -74,17 +74,45 @@ class Disney:
             msg = ''
             try:
                 b = d['errorData']['errorBoundary']; parts = []
-                try: parts.append(Disney._resolve(b['header']['copy']['text'], ''))
-                except: pass
-                try: [parts.append(Disney._resolve(i['copy']['text'], '')) for i in b['body']['textList']]
-                except: pass
-                msg = ' — '.join(parts)
-            except: pass
+                try:
+                    header_text = ((b.get('header') or {}).get('copy') or {}).get('text') or ''
+                    if header_text:
+                        parts.append(Disney._resolve(header_text, ''))
+                except Exception: pass
+                try:
+                    body_list = (b.get('body') or {}).get('textList') or []
+                    if isinstance(body_list, list):
+                        for item in body_list:
+                            try:
+                                text = ((item or {}).get('copy') or {}).get('text') or ''
+                                if text:
+                                    parts.append(Disney._resolve(text, ''))
+                            except Exception: continue
+                except Exception: pass
+                msg = ' — '.join(p for p in parts if p)
+            except Exception: pass
             return {'status': True, 'success': False, 'card': card_str, 'response': msg or Disney._resolve('', error_code), 'apiResponse': 'Declined ❌', 'email': data.mail, 'password': data.password}
         except: return {'status': True, 'success': False, 'card': card_str, 'response': 'ParseError', 'apiResponse': 'Unknown ⚠️', 'email': data.mail, 'password': data.password}
 
 
-def processDisneyFlow(cardInput: str, proxy: str | None = None, capsolver_key: str = '', retries: int = 0) -> dict:
+# Capsolver key is loaded EXCLUSIVELY from env (CAPSOLVER_KEY) — no default.
+# The deploy must set this in Model/config.env or .env so the gate can solve
+# the reCAPTCHA. If unset, the gate fails fast with a clear error instead of
+# burning a captcha attempt with an empty/invalid key.
+# load_env() must be called before this module is imported so CAPSOLVER_KEY
+# from Model/config.env is honored.
+_CAPSOLVER_KEY = os.getenv('CAPSOLVER_KEY', '').strip()
+
+
+def processDisneyFlow(cardInput: str, proxy: str | None = None, capsolver_key: str = _CAPSOLVER_KEY, retries: int = 0) -> dict:
+
+    if not capsolver_key:
+        # Fail fast with a clear message instead of burning a captcha attempt.
+        card = Disney.parseCard(cardInput)
+        return {'status': False,
+                'message': 'CAPSOLVER_KEY no configurada — define CAPSOLVER_KEY en Model/config.env o .env para usar este gate.',
+                'card': f"{card['number']}|{card['month']}|{card['year']}|{card['cvv']}",
+                'gateway': 'Disney+ Plans Subscription'}
 
     model = curl.Session(impersonate='firefox133')
     data  = Disney.generateProfile()
@@ -194,5 +222,12 @@ def processDisneyFlow(cardInput: str, proxy: str | None = None, capsolver_key: s
         return Disney.buildBillingResponse(card, request8, data) | {'retries': str(retries), 'gateway': 'Disney+ Plans Subscription'}
 
     except Exception as e:
+        # Detect non-MX proxy geo-block early so the user gets a clear message
+        # instead of a stack-trace-looking parse error from the signup step.
+        raw = str(e)
+        if 'Forbidden location' in raw or 'token.service.unau' in raw or 'upstream' in raw.lower():
+            return {'status': False, 'message': '[registerDevice] Proxy MX requerido — Disney bloqueó la región del proxy (Forbidden location). Configura un proxy mexicano.',
+                    'card': f"{card['number']}|{card['month']}|{card['year']}|{card['cvv']}",
+                    'retries': str(retries), 'gateway': 'Disney+ Plans Subscription'}
         if retries < 3: return processDisneyFlow(cardInput, proxy, capsolver_key, retries + 1)
         return {'status': False, 'message': f'[{_step}] {e}', 'card': f"{card['number']}|{card['month']}|{card['year']}|{card['cvv']}", 'retries': str(retries), 'gateway': 'Disney+ Plans Subscription'}
