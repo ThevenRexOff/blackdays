@@ -211,21 +211,10 @@ def _has_auth_cookie(session):
         except Exception:
             return False
 
-    # Auth cookie must be present AND have a real value — not empty, not "-"
-    auth_cookie_names = {"at-main", "sess-at-main"}
-    has_auth_name = bool(names & auth_cookie_names)
-    if not has_auth_name:
-        return False
-
-    # Verify the at-main cookie has an actual value (not empty, not placeholder)
-    jar = session.cookies.jar if hasattr(session.cookies, 'jar') else session.cookies
-    for c in jar:
-        name = getattr(c, 'name', None) or (c[0] if isinstance(c, tuple) else None)
-        domain = getattr(c, 'domain', '') or ''
-        value = getattr(c, 'value', None) or (c[1] if isinstance(c, tuple) else '')
-        if name == 'at-main' and value and value != '-':
-            return True
-    return False
+    # Real auth cookies only — session-id / x-main are set on EVERY Amazon
+    # page (even logged out), so they can't prove a registration succeeded.
+    auth_cookie_names = {"at-main", "sess-at-main", "sso-state-main", "session-token"}
+    return bool(names & auth_cookie_names)
 
 
 def _get_session_id(session, domain):
@@ -269,11 +258,9 @@ def _arb_from_text(text):
 # ── Session builder ──────────────────────────────────────────────────────────
 
 def build_session(proxy=None, country_code="US") -> AsyncSession:
-    # Per-request HTTP session: 60s timeout — residential rotating proxies add
-    # variable latency per request (different exit IP each time), and Amazon
-    # sometimes hangs the socket open when it rate-limits without sending
-    # bytes. Keep retry=1 so a single dropped request doesn't burn 3 × timeout.
-    session = AsyncSession(retry=1, impersonate=_IMPERSONATE, timeout=60.0)
+    # Per-request HTTP session: 20s timeout (vaultproxies can be slow on
+    # transatlantic hops), 2 retries per request.
+    session = AsyncSession(retry=2, impersonate=_IMPERSONATE, timeout=20.0)
     session.trust_env = False
     config = COUNTRY_CONFIG.get(country_code, COUNTRY_CONFIG["US"])
     accept_lang = config.get("accept_language", "en-US,en;q=0.9")
@@ -528,49 +515,27 @@ async def add_address(session, first_name, last_name, phone_e164, prev_csrf, cou
 async def create_email(country_code="US", max_attempts=None):
     """Create an account, retrying the whole flow (fresh temp-mail + fresh
     session → fresh proxy exit IP) when Amazon transiently rejects the register
-    POST (e.g. the 404 rate-limit page).
-
-    Note on timeouts: the proxy is typically a residential rotating one (each
-    request may exit through a different IP). Amazon sometimes hangs the
-    socket open without sending bytes when it rate-limits, causing a curl
-    timeout (28) with 0 bytes received. We treat that as a transient failure
-    distinct from "captcha" — keep retrying with a slightly longer backoff and
-    a smaller attempt cap so we don't burn 7+ minutes on a dead proxy.
-    """
+    POST (e.g. the 404 rate-limit page)."""
     if max_attempts is None:
-        max_attempts = 4  # 4 attempts is enough — past that the proxy is dead
-    timeout_count = 0
+        max_attempts = 3  # registration retries per account (1 = no retry)
     for attempt in range(1, max_attempts + 1):
         if attempt > 1:
-            # Exponential backoff with a bit of jitter.
-            delay = random.uniform(2, 4) * (2 ** (attempt - 2))
-            log.info(f"Reintento {attempt}/{max_attempts} en {delay:.0f}s")
+            # Amazon's "We've detected unusual activity" is a transient
+            # velocity flag: back off longer between attempts so the proxy pool
+            # rotates to a clean exit IP before retrying.
+            delay = random.uniform(2, 4) if attempt == 2 else random.uniform(20, 40)
+            log.info(f"Reintento {attempt}/{max_attempts} en {delay:.0f}s (nueva IP/email)")
             await asyncio.sleep(delay)
-        try:
-            result = await _create_email_once(country_code)
-        except Exception as e:
-            # curl_cffi surfaces network errors as plain exceptions (asyncio
-            # TimeoutError, curl_cffi.exceptions.*, or request.exceptions.*).
-            # Treat them as transient — log them distinctly so we can see when
-            # a residential proxy's rotating IP is causing connection churn.
-            name = type(e).__name__
-            msg = str(e)[:120]
-            if 'Timeout' in name or 'timeout' in msg.lower() or 'timed out' in msg.lower():
-                timeout_count += 1
-                log.warn(f"Timeout en intento {attempt}/{max_attempts} ({timeout_count} timeouts consecutivos) — proxy residencial rotativo puede estar cambiando IP mid-flow. {msg}")
-            else:
-                log.warn(f"Excepción en intento {attempt}/{max_attempts}: {name}: {msg}")
-            continue
+        result = await _create_email_once(country_code)
         if result and result != "captcha":
             return result
         if result == "captcha":
-            delay = random.uniform(8, 15)
-            log.info(f"Captcha detectado — reintento {attempt}/{max_attempts} en {delay:.0f}s")
+            # Saltar a un backoff más largo (la IP/FP ya están quemadas).
+            delay = random.uniform(20, 40)
+            log.info(f"Reintento {attempt}/{max_attempts} en {delay:.0f}s (nueva IP/email)")
             await asyncio.sleep(delay)
         else:
             log.warn(f"Intento {attempt}/{max_attempts} fallido")
-    if timeout_count >= max_attempts:
-        log.warn(f"Todos los {max_attempts} intentos fallaron por timeout — proxy residencial probablemente está dando IPs inconsistentes o Amazon está colgando conexiones sin responder.")
     return None
 
 
@@ -592,7 +557,7 @@ async def _create_email_once(country_code="US"):
     rand_num = secrets.randbelow(9000) + 1000  # Equivalente seguro a 1000-9999
     uuid_part = uuid.uuid4().hex[:8]
 
-    password = f"@Osiris{rand_num}{uuid_part}"
+    password = f"@Acxrd{rand_num}{uuid_part}"
 
     log.info("Country", f"{country_code} - {domain}")
     t0 = time.time()

@@ -1,10 +1,15 @@
 # ══════════════════════════════════════════════════════════════════════════
 #  Coder: t.me/Vxsilisk  -  Shop: t.me/Sxgitario
 # ══════════════════════════════════════════════════════════════════════════
-import time, os, sys, pathlib
+import asyncio
+import os
+import pathlib
+import sys
+import threading
+import time
 from Commands.jill import *
 
-# Add cookiegen_local to path so AmazonAccountCreator is importable
+# Add cookiegen_local to path so amazon_v2 + friends are importable
 _CG_DIR = str(pathlib.Path(__file__).resolve().parent / 'cookiegen_local')
 if _CG_DIR not in sys.path:
     sys.path.insert(0, _CG_DIR)
@@ -18,37 +23,74 @@ COUNTRIES = {
     'JP': '🇯🇵 JP',
 }
 
+# Persistent event loop in a daemon thread — same pattern Archive/app.py uses.
+# Keeps the async engine (curl_cffi, fmail poller, temp-mail timers) warm
+# across calls so we don't pay the asyncio.run() + warm-up cost on every
+# request. One loop is enough for the whole process.
+_COOKIEGEN_LOOP = asyncio.new_event_loop()
+threading.Thread(target=_COOKIEGEN_LOOP.run_forever, daemon=True).start()
+
 
 def _generate_cookie(country: str, proxy: str = None) -> dict:
+    """Synchronous wrapper over amazon_v2.create_email(). Runs the async flow
+    in the persistent loop above and blocks until it returns (timeout 300s,
+    same as Archive/app.py).
+
+    The async engine reads AMZN_PROXY/REQ_PROXY once at import time into
+    amazon_v2._PROXY_URL, so any change to the env var requires a worker
+    restart. We refresh it on every call so the API doesn't need a restart
+    when the operator changes the proxy in Model/config.env.
+    """
     try:
-        from account_creator import AmazonAccountCreator
+        import amazon_v2
         # Prefer a single shared residential proxy (AMZN_PROXY / REQ_PROXY) over
-        # the per-country pool. The pool files (php/proxies_<COUNTRY>.txt) only
-        # have entries for US and MX, and even those are geo-locked — a single
-        # non-geo residential proxy (one IP per request) works for every
-        # amazon.<tld> region. The Archive version uses this exact pattern.
-        if not proxy:
-            proxy = os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or ''
-            if proxy:
-                proxy = proxy.strip()
-        if not proxy:
-            try:
-                from api.proxies import get_proxy
-                proxy = get_proxy(country) or None
-            except Exception:
-                proxy = None
-        raw_domains  = os.getenv('MAIL_DOMAINS', 'shopsxgitario.com,sxgitarioshop.com')
-        mail_domains = [d.strip() for d in raw_domains.split(',') if d.strip()]
-        creator = AmazonAccountCreator(
-            country     = country,
-            proxy       = proxy,
-            verbose     = False,
-            clearScreen = False,
-            mailDomains = mail_domains,
+        # the per-country pool — same pattern as Archive/.env.
+        proxy = (proxy or os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or '').strip()
+        amazon_v2._PROXY_URL = proxy or ''
+
+        future = asyncio.run_coroutine_threadsafe(
+            amazon_v2.create_email(country),
+            _COOKIEGEN_LOOP,
         )
-        return creator.processRegistration()
+        account = future.result(timeout=300)
+
+        if not isinstance(account, amazon_v2.Account):
+            return {'status': False, 'message': 'Amazon rechazó el registro (posible captcha, cookie no generada) — intenta con otro país o proxy'}
+
+        cookie_str = account.cookie or ''
+        cookie_dict = _parse_cookie_str(cookie_str)
+        return {
+            'status':               True,
+            'profile':              {
+                'name':     account.name or '',
+                'email':    account.email or '',
+                'password': account.password or '',
+            },
+            'message':              'Account created successfully.',
+            'billingAddressStatus': None,
+            'billingMessage':       '',
+            'cookies':              cookie_str,
+            'cookie_dict':          cookie_dict,
+            'time_taken':           0,
+            'retries':              0,
+        }
     except Exception as e:
         return {'status': False, 'message': f'{type(e).__name__}: {e}'}
+
+
+def _parse_cookie_str(cookie_str: str) -> dict:
+    parsed = {}
+    if not cookie_str:
+        return parsed
+    for part in cookie_str.split(';'):
+        part = part.strip()
+        if not part or '=' not in part:
+            continue
+        name, _, value = part.partition('=')
+        name = name.strip()
+        if name:
+            parsed[name] = value
+    return parsed
 
 
 def _save_cookie_to_file(bot, uid, cookie_data):
