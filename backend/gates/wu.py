@@ -14,11 +14,21 @@ _f = Faker('en_US')
 
 # El gate WU define su propio proxy regional leyendo php/proxies.txt (US).
 # Si el archivo está vacío, cae al env WU_PROXY. Si tampoco, sin proxy.
+# El pool puede tener formato 'user:pass@host:port' (sin esquema); curl_cffi
+# también necesita 'http://user:pass@host:port'.
+def _normalize_proxy(p: str) -> str:
+    p = (p or '').strip()
+    if not p:
+        return ''
+    if '://' not in p:
+        return f'http://{p}'
+    return p
+
 try:
     from api.proxies import get_proxy as _gate_get_proxy
-    _PROXY = _gate_get_proxy('US') or os.getenv('WU_PROXY') or ''
+    _PROXY = _normalize_proxy(_gate_get_proxy('US') or os.getenv('WU_PROXY') or '')
 except Exception:
-    _PROXY = os.getenv('WU_PROXY') or ''
+    _PROXY = _normalize_proxy(os.getenv('WU_PROXY') or '')
 
 _name = lambda: (_f.first_name().replace(' ', '').replace('.', ''), _f.last_name())
 

@@ -102,9 +102,13 @@ def normalized(r: dict) -> dict:
         return {'status': 'Error ⚠️', 'response': r.get('raise') or r.get('response') or 'Gate error'}
     status = r.get('status', '')
     if status in ('Approved ✅', 'Declined ❌', 'Live Card 🟢', 'Error ⚠️', 'Unknown ⚠️'):
+        # Some legacy gates (e.g. Commands/Gates/telcel_core) return `message`
+        # instead of `response` — copy it over so the user sees why it failed.
+        if not r.get('response') and r.get('message'):
+            r['response'] = r['message']
         return r
     success = bool(r.get('success'))
-    resp = r.get('response') or ''
+    resp = r.get('response') or r.get('message') or ''
     return {'status': 'Approved ✅' if success else 'Declined ❌', 'response': resp}
 
 
@@ -233,6 +237,10 @@ def gate_telcel(parsed: dict, extra: dict) -> dict:
     if not numero:
         return {'status': False, 'error': 'Telcel gate requires a phone parameter'}
     r = main(parsed['card'], monto, numero)
+    # telcel_core returns `message` (legacy) — normalize to `response` so the
+    # client always sees the failure reason under the same key.
+    if r.get('message') and not r.get('response'):
+        r['response'] = r['message']
     return {'card': parsed['card'], 'phone': numero, 'monto': monto, **r}
 
 

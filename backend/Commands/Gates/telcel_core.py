@@ -6,12 +6,22 @@ from faker import Faker
 
 """ Proxy. El gate TELCEL define su propia región (MX) leyendo
 php/proxies_mx.txt (igual que el generador hace con proxies_jp.txt para JP).
-Si el archivo está vacío, cae al env TELCEL_PROXY. Si tampoco, sin proxy. """
+Si el archivo está vacío, cae al env TELCEL_PROXY. Si tampoco, sin proxy.
+El pool puede tener formato 'user:pass@host:port' (sin esquema) — `requests`
+necesita 'http://user:pass@host:port'. """
+def _normalize_proxy(p: str) -> str:
+    p = (p or '').strip()
+    if not p:
+        return ''
+    if '://' not in p:
+        return f'http://{p}'
+    return p
+
 try:
     from api.proxies import get_proxy as _gate_get_proxy
-    prxy = _gate_get_proxy('MX') or os.getenv('TELCEL_PROXY') or ''
+    prxy = _normalize_proxy(_gate_get_proxy('MX') or os.getenv('TELCEL_PROXY') or '')
 except Exception:
-    prxy = os.getenv('TELCEL_PROXY') or ''
+    prxy = _normalize_proxy(os.getenv('TELCEL_PROXY') or '')
 #End proxy
 
 class RSAEncrypt: # Clase que encripta la tarjeta * SP

@@ -10,6 +10,12 @@
 # ══════════════════════════════════════════════════════════════════════════
 import argparse
 
+# Load .env / Model/config.env FIRST — before any other import — so that
+# CAPSOLVER_KEY / AMZN_PROXY / etc. are visible when gate modules read
+# them at import time (e.g. gates/bl.py:17 caches _CAPSOLVER_KEY).
+import config
+config.load_env()
+
 from api import create_app, banner
 
 
