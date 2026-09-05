@@ -3,6 +3,7 @@
 #  Each handler receives the merged params dict and returns a JSON-serializable
 #  dict. Pure business logic — no Flask request objects here.
 # ══════════════════════════════════════════════════════════════════════════
+import os
 import random
 import string
 from types import SimpleNamespace
@@ -156,8 +157,13 @@ def cmd_amz_generator(params: dict) -> dict:
     if country not in COUNTRIES:
         return {'status': False, 'error':
                 f'Invalid country [{country}]. Supported: {", ".join(COUNTRIES.keys())}'}
-    from api.proxies import get_proxy
-    proxy = (proxy or get_proxy(country)) or None
+    # Prefer the global AMZN_PROXY/REQ_PROXY over the per-country pool — a
+    # single non-geo residential proxy covers all amazon.<tld> regions.
+    if not proxy:
+        proxy = os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or ''
+    if not proxy:
+        from api.proxies import get_proxy
+        proxy = get_proxy(country) or None
     result = _generate_cookie(country, proxy)
     if not result or not result.get('status'):
         return {'status': False, 'error':
