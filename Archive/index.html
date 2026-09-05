@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon FP Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #0a0e1a;
+      --card: #0d1226;
+      --border: #1a2744;
+      --blue: #00d4ff;
+      --blue2: #0088cc;
+      --blue3: #004466;
+      --glow: 0 0 20px rgba(0, 212, 255, .3);
+      --text: #c8d6e5;
+      --text2: #8899aa;
+    }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        linear-gradient(rgba(0, 212, 255, .03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, .03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+      0% {
+        transform: translate(0)
+      }
+
+      100% {
+        transform: translate(60px, 60px)
+      }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      background: repeating-linear-gradient(transparent, transparent 2px, rgba(0, 0, 0, .05) 2px, rgba(0, 0, 0, .05) 4px);
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      position: relative;
+      z-index: 1
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px
+    }
+
+    .header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--blue), #00ff88, var(--blue));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradShift 3s ease infinite;
+    }
+
+    @keyframes gradShift {
+
+      0%,
+      100% {
+        background-position: 0% 50%
+      }
+
+      50% {
+        background-position: 100% 50%
+      }
+    }
+
+    .header p {
+      color: var(--text2);
+      font-size: .95rem;
+      margin-top: 6px;
+      letter-spacing: 2px;
+      text-transform: uppercase
+    }
+
+    .header .line {
+      height: 1px;
+      margin-top: 16px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s, box-shadow .3s;
+    }
+
+    .card:hover {
+      border-color: var(--blue3);
+      box-shadow: var(--glow)
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    }
+
+    .card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+
+    label {
+      display: block;
+      font-size: .8rem;
+      color: var(--text2);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      background: #0a0f20;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color .3s, box-shadow .3s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300d4ff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, .15)
+    }
+
+    select option {
+      background: #0a0f20;
+      color: var(--text)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      padding: 13px 36px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .85rem;
+      font-weight: 700;
+      color: #0a0e1a;
+      background: linear-gradient(135deg, var(--blue), #00ff88);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: transform .2s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 212, 255, .4)
+    }
+
+    .btn:active {
+      transform: translateY(0)
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none
+    }
+
+    .btn .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(10, 14, 26, .3);
+      border-top-color: #0a0e1a;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: none;
+    }
+
+    .btn.loading .spinner {
+      display: block
+    }
+
+    .btn.loading .btn-text {
+      opacity: .5
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .status-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(0, 212, 255, .05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+    }
+
+    .status-bar.visible {
+      display: flex
+    }
+
+    .status-bar .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--blue);
+      animation: pulse 1.5s ease infinite;
+      flex-shrink: 0;
+    }
+
+    .status-bar.error {
+      border-color: #ff4444;
+      background: rgba(255, 68, 68, .08)
+    }
+
+    .status-bar.error .dot {
+      background: #ff4444
+    }
+
+    .status-bar.done {
+      border-color: #00ff88;
+      background: rgba(0, 255, 136, .08)
+    }
+
+    .status-bar.done .dot {
+      background: #00ff88;
+      animation: none
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px
+    }
+
+    .result.visible {
+      display: block
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      background: rgba(0, 212, 255, .04);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .9rem;
+    }
+
+    .result-item .label {
+      color: var(--text2);
+      text-transform: uppercase;
+      font-size: .75rem;
+      letter-spacing: 1px
+    }
+
+    .result-item .value {
+      color: var(--blue);
+      font-weight: 600;
+      font-family: monospace;
+      font-size: .88rem;
+      max-width: 340px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color .2s;
+      position: relative;
+    }
+
+    .result-item .value:hover {
+      color: #00ff88
+    }
+
+    .result-item .value .copied {
+      position: absolute;
+      top: -22px;
+      right: 0;
+      font-size: .65rem;
+      color: #00ff88;
+      font-family: 'Rajdhani', sans-serif;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+    }
+
+    .result-item .value:hover .copied {
+      opacity: 1
+    }
+
+    .result-item.cookie {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px
+    }
+
+    .result-item.cookie .value {
+      max-width: 100%;
+      word-break: break-all;
+      white-space: normal
+    }
+
+    .copy-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 8px 20px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--blue);
+      background: transparent;
+      border: 1px solid var(--blue3);
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: background .3s, color .3s;
+    }
+
+    .copy-all:hover {
+      background: var(--blue);
+      color: var(--bg)
+    }
+
+    .history {
+      margin-top: 30px
+    }
+
+    .history h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--text2);
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      padding: 10px 14px;
+      margin-bottom: 4px;
+      background: rgba(0, 212, 255, .03);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .82rem;
+      align-items: center;
+    }
+
+    .history-item .h-email {
+      color: var(--blue);
+      font-family: monospace
+    }
+
+    .history-item .h-pass {
+      color: var(--text2);
+      font-family: monospace
+    }
+
+    .history-item .h-status {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .h-status.ok {
+      color: #00ff88;
+      background: rgba(0, 255, 136, .1);
+      border: 1px solid rgba(0, 255, 136, .2)
+    }
+
+    .h-status.fail {
+      color: #ff4444;
+      background: rgba(255, 68, 68, .1);
+      border: 1px solid rgba(255, 68, 68, .2)
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--text2);
+      font-size: .85rem;
+      padding: 30px 0;
+      opacity: .5
+    }
+
+    @media(max-width:500px) {
+      .header h1 {
+        font-size: 1.5rem
+      }
+
+      .card {
+        padding: 20px
+      }
+
+      .history-item {
+        grid-template-columns: 1fr;
+        gap: 4px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="header">
+      <h1>AMAZON Gen</h1>
+      <p>Amazon Account Generator 2.0</p>
+      <div class="line"></div>
+    </div>
+
+    <div class="card">
+      <h2>// CONFIGURATION</h2>
+      <label for="country">Target Country</label>
+      <select id="country">
+        <option value="">Loading countries...</option>
+      </select>
+      <button class="btn" id="createBtn" onclick="create()">
+        <span class="spinner"></span>
+        <span class="btn-text">Generate Account</span>
+      </button>
+      <div class="status-bar" id="statusBar">
+        <div class="dot"></div>
+        <span id="statusText"></span>
+      </div>
+    </div>
+
+    <div class="card result" id="resultCard">
+      <h2>// RESULT</h2>
+      <div class="result-item">
+        <span class="label">Email</span>
+        <span class="value" id="rEmail" onclick="copy(this)">-<span class="copied">COPIED</span></span>
+      </div>
+      <div class="result-item">
+        <span class="label">Password</span>
+        <span class="value" id="rPass" onclick="copy(this)">-<span class="copied">COPIED</span></span>
+      </div>
+      <div class="result-item">
+        <span class="label">Name</span>
+        <span class="value" id="rName">-</span>
+      </div>
+      <div class="result-item cookie">
+        <span class="label">Cookie</span>
+        <span class="value" id="rCookie" onclick="copy(this)">-<span class="copied">COPIED</span></span>
+      </div>
+      <button class="copy-all" onclick="copyAll()">Copy All</button>
+    </div>
+
+    <div class="history card">
+      <h2>// HISTORY</h2>
+      <div id="historyList">
+        <div class="empty">No accounts generated yet</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000';
+    let history = [];
+
+    fetch(API + '/api/countries')
+      .then(r => r.json())
+      .then(list => {
+        document.getElementById('country').innerHTML =
+          list.map(c => `<option value="${c.code}">${c.code} — ${c.domain}</option>`).join('');
+      })
+      .catch(() => { document.getElementById('country').innerHTML = '<option>Error loading</option>'; });
+
+    function copy(el) {
+      const text = el.childNodes[0].textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const tag = el.querySelector('.copied');
+        if (tag) { tag.style.opacity = '1'; setTimeout(() => tag.style.opacity = '0', 800); }
+      });
+    }
+    function copyAll() {
+      const e = document.getElementById('rEmail').childNodes[0].textContent;
+      const p = document.getElementById('rPass').childNodes[0].textContent;
+      const c = document.getElementById('rCookie').childNodes[0].textContent;
+      navigator.clipboard.writeText(`Email: ${e}\nPassword: ${p}\nCookie: ${c}`);
+    }
+
+    async function create() {
+      const country = document.getElementById('country').value;
+      if (!country) return;
+      const btn = document.getElementById('createBtn');
+      const bar = document.getElementById('statusBar');
+      const txt = document.getElementById('statusText');
+      const res = document.getElementById('resultCard');
+
+      btn.classList.add('loading'); btn.disabled = true;
+      bar.className = 'status-bar visible'; txt.textContent = 'Queuing job...';
+      res.className = 'card result';
+
+      try {
+        const r = await fetch(API + '/api/create', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ country })
+        });
+        const { job_id, error } = await r.json();
+        if (error) throw new Error(error);
+        txt.textContent = 'Processing... (waiting for OTP)';
+
+        let attempts = 0;
+        const poll = async () => {
+          attempts++;
+          if (attempts > 150) { bar.className = 'status-bar visible error'; txt.textContent = 'Timed out'; btn.classList.remove('loading'); btn.disabled = false; return; }
+          const s = await fetch(API + `/api/status/${job_id}`);
+          const d = await s.json();
+          if (d.status === 'running') { txt.textContent = `Processing... (${attempts})`; setTimeout(poll, 2000); }
+          else if (d.status === 'done') { bar.className = 'status-bar visible done'; txt.textContent = 'Account created!'; showResult(d.result, country); btn.classList.remove('loading'); btn.disabled = false; }
+          else { bar.className = 'status-bar visible error'; txt.textContent = d.error || 'Failed'; btn.classList.remove('loading'); btn.disabled = false; }
+        };
+        setTimeout(poll, 1500);
+      } catch (e) {
+        bar.className = 'status-bar visible error'; txt.textContent = e.message;
+        btn.classList.remove('loading'); btn.disabled = false;
+      }
+    }
+
+    function showResult(r, country) {
+      document.getElementById('rEmail').childNodes[0].textContent = r.email;
+      document.getElementById('rPass').childNodes[0].textContent = r.password;
+      document.getElementById('rName').childNodes[0].textContent = r.name;
+      document.getElementById('rCookie').childNodes[0].textContent = r.cookie || '(none)';
+      document.getElementById('resultCard').className = 'card result visible';
+      history.unshift({ email: r.email, password: r.password, ok: true, country });
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const el = document.getElementById('historyList');
+      if (!history.length) { el.innerHTML = '<div class="empty">No accounts generated yet</div>'; return; }
+      el.innerHTML = history.map(h =>
+        `<div class="history-item"><span class="h-email">${h.email}</span><span class="h-pass">${h.password}</span><span class="h-status ok">OK</span></div>`
+      ).join('');
+    }
+  </script>
+</body>
+
+</html>

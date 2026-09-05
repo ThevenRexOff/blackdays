@@ -1,6 +1,6 @@
 # Pure gate motor for 'wu' — no Telegram-bot dependency.
 
-import random, re
+import os, random, re
 
 from faker import Faker
 
@@ -12,7 +12,13 @@ _GATEWAY = 'WooCommerce USAePay CCN'
 
 _f = Faker('en_US')
 
-_PROXY = 'http://bxgjlizg-rotate:mjzr41kvin2m@p.webshare.io:80'
+# El gate WU define su propio proxy regional leyendo php/proxies.txt (US).
+# Si el archivo está vacío, cae al env WU_PROXY. Si tampoco, sin proxy.
+try:
+    from api.proxies import get_proxy as _gate_get_proxy
+    _PROXY = _gate_get_proxy('US') or os.getenv('WU_PROXY') or ''
+except Exception:
+    _PROXY = os.getenv('WU_PROXY') or ''
 
 _name = lambda: (_f.first_name().replace(' ', '').replace('.', ''), _f.last_name())
 

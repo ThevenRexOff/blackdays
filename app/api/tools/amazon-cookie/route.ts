@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 
-const GENERATOR_COST = 25 // credits per cookie
+const GENERATOR_COST = 4 // credits per cookie
 
 export async function POST(request: NextRequest) {
   try {

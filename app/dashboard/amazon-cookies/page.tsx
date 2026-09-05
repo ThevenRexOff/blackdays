@@ -37,7 +37,7 @@ const COUNTRIES = [
   { code: 'EG', name: '🇪🇬 Egipto', flag: 'EG' },
 ]
 
-const COST = 25
+const COST = 4
 
 export default function AmazonCookiesPage() {
   const { data: session, status } = useSession()
@@ -177,18 +177,23 @@ export default function AmazonCookiesPage() {
           </div>
         </div>
 
-        <button
-          onClick={generateCookie}
-          disabled={generating}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-mono-cyber text-sm font-bold uppercase px-6 py-2.5 transition-all duration-200 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] cursor-pointer"
-        >
-          {generating ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <Zap className="h-4 w-4" />
-          )}
-          {generating ? 'GENERANDO...' : 'GENERAR COOKIE'}
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="font-mono-cyber text-[10px] uppercase tracking-widest text-amber-400/80 border border-amber-500/30 bg-amber-950/30 px-2 py-1">
+            −{COST} créditos al generar
+          </span>
+          <button
+            onClick={generateCookie}
+            disabled={generating}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-mono-cyber text-sm font-bold uppercase px-6 py-2.5 transition-all duration-200 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] cursor-pointer"
+          >
+            {generating ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="h-4 w-4" />
+            )}
+            {generating ? 'GENERANDO...' : 'GENERAR COOKIE'}
+          </button>
+        </div>
       </div>
 
       {/* Cookie display */}

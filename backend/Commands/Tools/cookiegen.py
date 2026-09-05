@@ -14,7 +14,7 @@ _CG_DIR = str(pathlib.Path(__file__).resolve().parent / 'cookiegen_local')
 if _CG_DIR not in sys.path:
     sys.path.insert(0, _CG_DIR)
 
-COST = 30
+COST = 4
 
 COUNTRIES = {
     'US': '🇺🇸 US', 'CA': '🇨🇦 CA', 'MX': '🇲🇽 MX', 'BR': '🇧🇷 BR',

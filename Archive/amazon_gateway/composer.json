@@ -1,0 +1,12 @@
+{
+    "name": "thevenrex/amazon_gateway",
+    "require": {
+        "guzzlehttp/guzzle": "^8.1",
+        "fakerphp/faker": "^1.24"
+    },
+    "autoload": {
+        "psr-4": {
+            "Thevenrex\\AmazonGateway\\": "src/"
+        }
+    }
+}

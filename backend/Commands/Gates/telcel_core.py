@@ -1,11 +1,17 @@
-import json, requests, random, sys, traceback
+import json, requests, random, sys, traceback, os
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 from fake_useragent import UserAgent
 from faker import Faker
 
-""" Proxy. EL FORMATO ES EN http://user:pass@host:port o http://ip:port """
-prxy = "http://b4ab6bbd7b83fecd-geo-mx:7ad3a6559050089d@gate-eu.vaultproxies.com:80"
+""" Proxy. El gate TELCEL define su propia región (MX) leyendo
+php/proxies_mx.txt (igual que el generador hace con proxies_jp.txt para JP).
+Si el archivo está vacío, cae al env TELCEL_PROXY. Si tampoco, sin proxy. """
+try:
+    from api.proxies import get_proxy as _gate_get_proxy
+    prxy = _gate_get_proxy('MX') or os.getenv('TELCEL_PROXY') or ''
+except Exception:
+    prxy = os.getenv('TELCEL_PROXY') or ''
 #End proxy
 
 class RSAEncrypt: # Clase que encripta la tarjeta * SP
