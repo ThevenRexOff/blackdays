@@ -115,13 +115,35 @@ def _mask_card(card: str) -> str:
     return (card or '')[:16]
 
 
-def _is_infra_error(status) -> bool:
+def _is_infra_error(status, response: str = '') -> bool:
     """True when the gate failed at infrastructure level (vs a normal decline).
-    Normal outcomes (Approved/Declined/Live/Dead) never trigger admin alerts."""
+    Normal outcomes (Approved/Declined/Live/Dead, or "cookie dead" refresh
+    hints) never trigger admin alerts — those are expected outcomes that
+    depend on the user's input, not on backend infrastructure."""
     if status is False:
         return True
     s = str(status or '').strip().lower()
-    return 'error' in s or 'unknown' in s or s in ('', 'false')
+    if 'error' not in s and 'unknown' not in s and s not in ('', 'false'):
+        return False
+    # Status says "error" but the response is a user-input hint, not infra.
+    r = (response or '').lower()
+    user_input_hints = (
+        'cookie dead',
+        'refresh your cookie',
+        'cookie expired',
+        'cookie invalid',
+        'cookie required',
+        'requires a cookie',
+        'no api url',
+        'missing_param',
+        'requires a phone',
+        'requires a cookie',
+        'cookie no',
+        'amazon gate requires',
+    )
+    if any(h in r for h in user_input_hints):
+        return False
+    return True
 
 
 def gate_run(params: dict) -> dict:
@@ -178,7 +200,8 @@ def gate_run(params: dict) -> dict:
         else:
             result = _done(_run_one(parsed['parts'], bin_info(parsed['parts'][0]), gate, extra), card)
 
-        if _is_infra_error(result.get('status')):
+        response_text = result.get('response') or result.get('error') or result.get('message') or ''
+        if _is_infra_error(result.get('status'), response_text):
             _notify_gate_error(gate, result, card=card, params=params)
         return result
     except Exception as exc:

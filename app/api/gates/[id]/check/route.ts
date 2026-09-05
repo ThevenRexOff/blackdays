@@ -177,7 +177,9 @@ export async function POST(
       }
     }
 
-    creditsDeducted = resultStatus === 'live' ? gate.creditsLive : gate.creditsDead
+    creditsDeducted = resultStatus === 'live' ? gate.creditsLive
+                    : resultStatus === 'dead' ? gate.creditsDead
+                    : 0  // 'error' → infrastructure error, no charge
 
     const currentStats = (gate.stats as Record<string, number>) || {}
     const prevLives = currentStats.lives ?? 0
@@ -205,17 +207,21 @@ export async function POST(
       }, { status: 200 })
     }
 
-    await prisma.gate.update({
-      where: { id: gate.id },
-      data: {
-        stats: {
-          lives: nextLives,
-          deads: nextDeads,
-          total: nextTotal,
-          successRate: Math.round((nextLives / nextTotal) * 100),
+    // Only update gate stats for real outcomes — skip 'error' so the
+    // successRate and counters don't get polluted by infrastructure failures.
+    if (resultStatus !== 'error') {
+      await prisma.gate.update({
+        where: { id: gate.id },
+        data: {
+          stats: {
+            lives: nextLives,
+            deads: nextDeads,
+            total: nextTotal,
+            successRate: nextTotal > 0 ? Math.round((nextLives / nextTotal) * 100) : 0,
+          },
         },
-      },
-    })
+      })
+    }
 
     const updatedUser = await prisma.user.findUnique({
       where: { id: user.id },
