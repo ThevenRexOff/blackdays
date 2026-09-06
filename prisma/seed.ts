@@ -228,18 +228,6 @@ const gates = [
     minRank: 'premium',
     stats: makeStats(0, 0),
   },
-  {
-    id: '9a2cf99d-6c22-4d10-8f20-amzgen0001',
-    name: 'Amazon Cookie Generator',
-    category: 'cookie',
-    description: 'Genera una cookie de Amazon (US) — cobra créditos por generación. BIN/card no aplica.',
-    isActive: true,
-    apiUrl: `${BASE}/amz_generator`,
-    creditsLive: 25,
-    creditsDead: 0,
-    minRank: 'premium',
-    stats: makeStats(0, 0),
-  },
 ]
 
 async function main() {

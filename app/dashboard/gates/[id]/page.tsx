@@ -96,8 +96,6 @@ const currentYear = new Date().getFullYear()
 const yearOptions = Array.from({ length: 11 }, (_, i) => String(currentYear + i).slice(2))
 const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
 
-const GENERATOR_GATE_ID = '9a2cf99d-6c22-4d10-8f20-amzgen0001'
-
 const GENERATOR_COST = 4 // credits per cookie — must match app/api/tools/amazon-cookie/route.ts
 
 const GENERATOR_COUNTRIES: Record<string, string> = {
@@ -115,7 +113,6 @@ export default function GatePage() {
   const [cookieInput, setCookieInput] = useState(() => typeof window !== 'undefined' ? (localStorage.getItem(`amz_cookie_${params?.id}`) ?? '') : '')
   const [genCookieLoading, setGenCookieLoading] = useState(false)
   const [genCookieCountry, setGenCookieCountry] = useState('US')
-  const isGenerator = params?.id === GENERATOR_GATE_ID
   const [phoneInput, setPhoneInput] = useState('')
   const [montoInput, setMontoInput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
@@ -741,10 +738,10 @@ export default function GatePage() {
                 setCookieInput(e.target.value)
                 try { localStorage.setItem(`amz_cookie_${params?.id}`, e.target.value) } catch {}
               }}
-              placeholder="> Pega aquí la cookie de Amazon (se guarda en tu navegador y se reutiliza) — o presiona GENERAR COOKIE"
+              placeholder="> Pega aquí la cookie de Amazon (se guarda en tu navegador y se reutiliza) — o usa el generador de arriba"
               className="h-28 w-full resize-none bg-black/50 px-3 py-2 font-mono-cyber text-sm text-cyan-300 placeholder-cyan-900/50 focus:border-cyan-400 focus:outline-none border border-cyan-900/50"
             />
-            {isGenerator && cookieInput && (
+            {cookieInput && (
               <div className="mt-2 flex items-center justify-end gap-2">
                 <button onClick={() => copyToClipboard(cookieInput, 'Cookie')}
                   className="flex items-center gap-1 border border-cyan-500/50 bg-cyan-950/40 px-3 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-cyan-400 hover:bg-cyan-600 hover:text-white cursor-pointer">
