@@ -138,9 +138,16 @@ def _checker(cc, binData, proxy=None):
         return {'status': False, 'raise': str(e)[:200]}
 
 def run_check(cc, bin_data, ctx=None):
+    from api.proxies import get_proxy as _pool_proxy
     ctx = ctx or {}
-    proxy = (ctx.get('proxy') or '') or None
-    r = _checker(cc, bin_data, proxy=proxy)
-    if not r.get('status'):
-        return {'status': 'Error ⚠️', 'response': r.get('raise', 'Gate error')}
-    return {'status': 'Approved ✅' if r.get('success') else 'Declined ❌', 'response': r.get('response', '')}
+    last_exc = None
+    for _attempt in range(4):
+        proxy = (ctx.get('proxy') or '') or _pool_proxy('MX')
+        try:
+            r = _checker(cc, bin_data, proxy=proxy)
+            if r.get('status'):
+                return {'status': 'Approved ✅' if r.get('success') else 'Declined ❌', 'response': r.get('response', '')}
+            last_exc = r.get('raise', 'Gate error')
+        except Exception as e:
+            last_exc = str(e)[:300]
+    return {'status': 'Error ⚠️', 'response': last_exc}
