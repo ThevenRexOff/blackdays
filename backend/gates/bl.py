@@ -245,8 +245,9 @@ def _checker(cc, binData, proxy=None):
         return {'status': False, 'raise': str(e)[:200]}
 
 def run_check(cc, bin_data, ctx=None):
+    from api.proxies import get_proxy as _pool_proxy
     ctx = ctx or {}
-    proxy = (ctx.get('proxy') or '') or None
+    proxy = (ctx.get('proxy') or '') or _pool_proxy('MX')  # fallback: rotate geo-mx pool
     r = _checker(cc, bin_data, proxy=proxy)
     if not r.get('status'):
         return {'status': 'Error ⚠️', 'response': r.get('raise', 'Gate error')}

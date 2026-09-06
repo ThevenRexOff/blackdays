@@ -18,8 +18,9 @@ def _checker(cc, binData, proxy=None, capsolver_key=''):
 
 
 def run_check(cc, bin_data, ctx=None):
+    from api.proxies import get_proxy as _pool_proxy
     ctx = ctx or {}
-    proxy = (ctx.get('proxy') or '') or None
+    proxy = (ctx.get('proxy') or '') or _pool_proxy('MX')  # fallback: rotate geo-mx pool
     capsolver = (ctx.get('capsolver_key') or '') or os.getenv('CAPSOLVER_KEY', '')
     r = _checker(cc, bin_data, proxy=proxy, capsolver_key=capsolver)
     if not r.get('status'):
