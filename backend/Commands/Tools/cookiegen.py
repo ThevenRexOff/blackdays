@@ -30,34 +30,24 @@ COUNTRIES = {
 _COOKIEGEN_LOOP = asyncio.new_event_loop()
 threading.Thread(target=_COOKIEGEN_LOOP.run_forever, daemon=True).start()
 
-# The generator is single-flight: registering an Amazon account spins one
-# async flow that shares the persistent loop, so concurrent calls would run
-# interleaved on the same loop (racing proxies/emails and poisoning each
-# other's retries). A threading lock queues them one at a time instead.
-_LOOP_LOCK = threading.Lock()
-
 
 def _generate_cookie(country: str, proxy: str = None) -> dict:
     """Synchronous wrapper over amazon_v2.create_email(). Runs the async flow
     in the persistent loop above and blocks until it returns (timeout 300s,
     same as Archive/app.py).
 
-    The async engine reads AMZN_PROXY/REQ_PROXY once at import time into
-    amazon_v2._PROXY_URL, so any change to the env var requires a worker
-    restart. We refresh it on every call so the API doesn't need a restart
-    when the operator changes the proxy in Model/config.env.
+    Each call resolves its own proxy (regional pool from tools.py) and passes
+    it straight to create_email(proxy=...), so concurrent users can generate
+    in parallel without tromping over a shared module-level proxy variable —
+    each run keeps its own exit IP all the way through its sequential retries.
     """
-    if not _LOOP_LOCK.acquire(timeout=320):
-        return {'status': False, 'message': 'Generador ocupado — inténtalo en un momento'}
     try:
         import amazon_v2
-        # Global proxy only — never the per-country pool. Archive/.env sets
-        # REQ_PROXY to one non-geo residential proxy that covers every region.
+        # Pin this run to the proxy resolved by the caller (regional pool).
         proxy = (proxy or os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or '').strip()
-        amazon_v2._PROXY_URL = proxy or ''
 
         future = asyncio.run_coroutine_threadsafe(
-            amazon_v2.create_email(country),
+            amazon_v2.create_email(country, proxy=proxy),
             _COOKIEGEN_LOOP,
         )
         account = future.result(timeout=300)
@@ -84,8 +74,6 @@ def _generate_cookie(country: str, proxy: str = None) -> dict:
         }
     except Exception as e:
         return {'status': False, 'message': f'{type(e).__name__}: {e}'}
-    finally:
-        _LOOP_LOCK.release()
 
 
 def _parse_cookie_str(cookie_str: str) -> dict:

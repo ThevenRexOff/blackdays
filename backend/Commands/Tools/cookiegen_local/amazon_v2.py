@@ -79,13 +79,15 @@ _PROXY_LIST = [
 _PROXY_QUEUE = list(_PROXY_LIST)
 
 
-def _pick_proxy():
-    """Return a proxy URL for one account, rotating through the pool.
+def _pick_proxy(explicit=None):
+    """Return the proxy URL for one account run.
 
-    If AMZN_PROXY_LIST is set, each attempt pops a different proxy from the
-    queue so a burned exit IP stops poisoning the whole run. Otherwise falls
-    back to the single AMZN_PROXY/REQ_PROXY (a rotating gateway usually gives a
-    fresh IP per connection on its own)."""
+    If an explicit per-request proxy is passed (each generation resolves its
+    own up front via the regional pool), it wins — this is the parallel-safe
+    path. Otherwise falls back to the optional AMZN_PROXY_LIST queue or the
+    single AMZN_PROXY/REQ_PROXY rotating gateway."""
+    if explicit:
+        return explicit
     if _PROXY_QUEUE:
         return _PROXY_QUEUE.pop(0)  # popped once = used once; never reused hot
     return _PROXY_URL
@@ -588,10 +590,16 @@ async def add_address(session, first_name, last_name, phone_e164, prev_csrf, cou
 
 # ── MAIN ─────────────────────────────────────────────────────────────────────
 
-async def create_email(country_code="US", max_attempts=None):
+async def create_email(country_code="US", max_attempts=None, proxy=None):
     """Create an account, retrying the whole flow (fresh temp-mail + fresh
     session → fresh proxy exit IP) when Amazon transiently rejects the register
-    POST (e.g. the 404 rate-limit page)."""
+    POST (e.g. the 404 rate-limit page).
+
+    `proxy` (optional) pins the account traffic to a specific exit for the
+    whole run. Each generation resolves its own proxy up front, so multiple
+    users can generate concurrently without sharing a burned IP or racing a
+    module-level pool. When omitted it falls back to _pick_proxy().
+    """
     if max_attempts is None:
         max_attempts = 3  # registration retries per account (1 = no retry)
     for attempt in range(1, max_attempts + 1):
@@ -602,7 +610,7 @@ async def create_email(country_code="US", max_attempts=None):
             delay = random.uniform(2, 4) if attempt == 2 else random.uniform(20, 40)
             log.info(f"Reintento {attempt}/{max_attempts} en {delay:.0f}s (nueva IP/email)")
             await asyncio.sleep(delay)
-        result = await _create_email_once(country_code)
+        result = await _create_email_once(country_code, proxy=proxy)
         if result and result != "captcha":
             return result
         if result == "captcha":
@@ -615,7 +623,7 @@ async def create_email(country_code="US", max_attempts=None):
     return None
 
 
-async def _create_email_once(country_code="US"):
+async def _create_email_once(country_code="US", proxy=None):
     config = COUNTRY_CONFIG.get(country_code, COUNTRY_CONFIG["US"])
     domain = config["domain"]
     assoc_handle = config["assoc_handle"]
@@ -650,7 +658,7 @@ async def _create_email_once(country_code="US"):
     imp_name, ua, _ = tls_profile
     log.info("TLS profile", imp_name)
 
-    session = build_session(proxy=_pick_proxy(), country_code=country_code, tls_profile=tls_profile)
+    session = build_session(proxy=_pick_proxy(explicit=proxy), country_code=country_code, tls_profile=tls_profile)
 
     try:
         r_fresh = await session.get(
