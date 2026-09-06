@@ -1,200 +1,120 @@
 '''
-MailX — cliente Python para el CF Email Worker privado.
+MailX — proveedor de correo desechable para gates.
 Uso:
-    from mailx import MailX
-    mx = MailX()
-    email = mx.create()               # "abc123@tudominio.xyz"
-    links = mx.poll(email, timeout=180)   # lista de links Netflix/Stripe/etc
-    mx.delete(email)                  # limpia KV
+    from mailx import FmailMailX
+    mx = FmailMailX(proxy=None)
+    email = mx.create()               # "abc123@fmail.men"
+    links = mx.poll(email, timeout=180, filter_domain='netflix')   # lista de links Netflix
+    mx.delete(email)                  # no-op
 '''
 
-import time, re, imaplib, email as _email_lib, string, random
+import time, re, random, string
+from urllib.parse import urlencode, quote
 from curl_cffi import requests as curl
 
-class MailX:
 
-    # ── Configura estos tres valores ──────────────────────────────────────────
-    WORKER_URL = 'https://mailx-inbox.jonathandesktop1.workers.dev'
-    SECRET     = '2b5cc434c1f9da164d1a223d95c16c59'
-    # ─────────────────────────────────────────────────────────────────────────
+class FmailMailX:
+    """Interceptor de la API fmail.men (la misma del generador de Amazon).
 
-    def __init__(self, worker_url: str | None = None, secret: str | None = None):
-        self.url    = (worker_url or self.WORKER_URL).rstrip('/')
-        self.secret = secret or self.SECRET
-        self._params = {'secret': self.secret}
+    Reemplaza al viejo MailX (CF Worker) y a GmailMailX (IMAP catch-all).
+    La API fmail.men es la única que pasa los filtros anti-disposable de
+    Amazon y no requiere credenciales.
+    """
+
+    BASE = 'https://fmail.men/v1'
+    WHITELIST_DOMAINS = [
+        'fmail.men', 'guns.lat', 'exolinker.com', 'uncmail.org',
+        'brodilla.email', 'corpmail.club', 'emailab.xyz', 'emailawb.pro',
+        'emailfoxi.pro', 'emailvb.pro', 'emailxo.pro', 'heroclash.info',
+        'safehouse.quest', 'tempmailonline.co', 'aquaflask.click',
+        'canicasbrawl.com', 'deislerlive.com', 'kuruptd.ink',
+        'ougoods.com', 'sevril.win', 'gootsijs.com', 'fs6.baby',
+    ]
+    _last_domain = None
+
+    def __init__(self, proxy=None):
+        self._session = curl.Session(impersonate='chrome131', timeout=10)
+        if proxy:
+            self._session.proxies = {'http': proxy, 'https': proxy}
+        self._seen = set()
+
+    def _get_json(self, path, **params):
+        last_exc = None
+        for attempt in range(3):
+            try:
+                r = self._session.get(f'{self.BASE}{path}', params=params)
+                r.raise_for_status()
+                return r.json()
+            except Exception as e:
+                last_exc = e
+                time.sleep(0.15 * (attempt + 1))
+        raise last_exc
 
     def create(self) -> str:
-        r = curl.post(f'{self.url}/create', params=self._params, timeout=10)
-        r.raise_for_status()
-        return r.json()['address']
-
-    def inbox(self, addr: str) -> list[dict]:
-        r = curl.get(f'{self.url}/inbox', params={**self._params, 'addr': addr}, timeout=10)
-        r.raise_for_status()
-        return r.json().get('messages', [])
+        domain = None
+        if self._last_domain:
+            candidates = self.WHITELIST_DOMAINS[:]
+            if self._last_domain in candidates:
+                candidates.remove(self._last_domain)
+            domain = random.choice(candidates)
+        data = self._get_json('/random', domain=domain)
+        self._last_domain = data.get('domain')
+        return data['address']
 
     def delete(self, addr: str) -> None:
-        try: curl.delete(f'{self.url}/inbox', params={**self._params, 'addr': addr}, timeout=10)
-        except: pass
+        pass  # fmail es desechable — no necesita cleanup
 
-    def poll(self, addr: str, timeout: int = 180, interval: int = 5,
+    @staticmethod
+    def _extract_links(text: str) -> list[str]:
+        return list(dict.fromkeys(re.findall(r'https?://[^\s\'"<>\[\]]+', text or '')))
+
+    def poll(self, addr: str, timeout: int = 180, interval: int = 3,
              filter_domain: str | None = None,
              magic_patterns: list[str] | None = None) -> tuple[list[str], str]:
-        '''
-        Espera hasta `timeout` segundos a que llegue un email a `addr`.
-        Devuelve (links, body_snippet).
-        magic_patterns: si se especifica, busca un email que tenga al menos un link que matchee.
-        Si no matchea ninguno, sigue esperando (otro email puede llegar y sobrescribir).
-        '''
-        for _ in range(timeout // interval):
-            time.sleep(interval)
+        deadline = time.time() + timeout
+        login = addr.split('@')[0]
+        while time.time() < deadline:
             try:
-                msgs = self.inbox(addr)
-                for msg in msgs:
-                    if filter_domain and filter_domain.lower() not in msg.get('from', '').lower():
+                inbox = self._get_json(f'/inbox/{login}', domain=addr.split('@')[-1])
+                for em in inbox.get('emails', []):
+                    token = em.get('token')
+                    if not token or token in self._seen:
                         continue
-                    links = msg.get('links', [])
+                    self._seen.add(token)
+                    sender = (em.get('sender') or '').lower()
+                    subject = (em.get('subject') or '').lower()
+                    if filter_domain and filter_domain.lower() not in sender:
+                        continue
+                    full = self._get_json(f'/email/{token}', domain=addr.split('@')[-1])
+                    body = ' '.join(filter(None, [
+                        full.get('subject'), full.get('body_text'), full.get('body_html'),
+                    ]))
+                    links = self._extract_links(body)
                     if not links:
                         continue
-                    body = msg.get('body', '')
-                    if magic_patterns:
-                        if any(any(p in l for p in magic_patterns) for l in links):
-                            return links, body
-                        # No match yet — keep polling (maybe magic link email arrives later)
-                    else:
-                        return links, body
+                    if magic_patterns and not any(any(p in l for p in magic_patterns) for l in links):
+                        continue
+                    return links, body[:400]
             except Exception:
                 pass
+            time.sleep(interval)
         return [], ''
 
     def poll_and_follow(self, addr: str, session, timeout: int = 180,
                         filter_domain: str | None = None) -> bool:
-        '''
-        Poll + sigue el primer link con `session` (curl_cffi Session).
-        Devuelve True si encontró y siguió un link, False si timeout.
-        '''
         links = self.poll(addr, timeout=timeout, filter_domain=filter_domain)
         for link in links:
             try:
                 session.get(url=link,
                             headers={'accept': 'text/html,*/*', 'accept-language': 'es-ES,es;q=0.9'},
                             timeout=20, allow_redirects=True)
-                self.delete(addr)
                 return True
             except Exception:
                 continue
         return False
 
-    def health(self) -> dict:
-        r = curl.get(f'{self.url}/health', params=self._params, timeout=10)
-        return r.json()
 
-
-class GmailMailX:
-    """Gmail IMAP catch-all — misma interfaz que MailX, sin CF Worker.
-
-    Requiere catch-all configurado en Cloudflare Email Routing hacia Gmail.
-    Genera direcciones aleatorias @dominio y las lee vía IMAP.
-    """
-
-    IMAP_HOST = 'imap.gmail.com'
-    IMAP_PORT = 993
-    IMAP_USER = 'nexxusbot4@gmail.com'
-    IMAP_PASS = 'aodgrparjqxvrhxq'
-    DOMAINS   = [
-        'apexmx.xyz', 'fluxmx.xyz', 'ionicmx.xyz', 'lumenmx.xyz',
-        'prismamx.xyz', 'quantamx.xyz', 'sxgitario.com', 'vectormx.xyz',
-        'vertexmx.xyz', 'vxsilisk.com', 'zenithmx.xyz',
-        'shopsxgitario.com', 'sxgitarioshop.com',
-    ]
-
-    def create(self) -> str:
-        local  = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
-        domain = random.choice(self.DOMAINS)
-        return f'{local}@{domain}'
-
-    def delete(self, addr: str) -> None:
-        pass  # catch-all IMAP — no cleanup needed
-
-    def poll(self, addr: str, timeout: int = 180, interval: int = 5,
-             filter_domain: str | None = None,
-             magic_patterns: list[str] | None = None) -> tuple[list[str], str]:
-        deadline = time.time() + timeout
-        seen_ids: set = set()
-        while time.time() < deadline:
-            try:
-                links, body = self._poll_once(addr, seen_ids, filter_domain, magic_patterns)
-                if links:
-                    return links, body
-            except Exception:
-                pass
-            time.sleep(interval)
-        return [], ''
-
-    def _poll_once(self, addr: str, seen_ids: set,
-                   filter_domain: str | None, magic_patterns: list | None):
-        conn = imaplib.IMAP4_SSL(self.IMAP_HOST, self.IMAP_PORT)
-        try:
-            conn.login(self.IMAP_USER, self.IMAP_PASS.replace(' ', ''))
-            _, mbox = conn.select('INBOX')
-            total = int(mbox[0]) if mbox and mbox[0] else 0
-            if total == 0:
-                return [], ''
-
-            start = max(1, total - 79)
-            _, hdr_data = conn.fetch(f'{start}:{total}', '(BODY[HEADER.FIELDS (TO FROM)])')
-            if not hdr_data:
-                return [], ''
-
-            candidates = []
-            for item in hdr_data:
-                if not isinstance(item, tuple):
-                    continue
-                seq_num = item[0].decode('latin-1').split()[0].encode()
-                hdr     = item[1].decode('utf-8', errors='replace')
-                if addr.lower() not in hdr.lower():
-                    continue
-                if filter_domain and filter_domain.lower() not in hdr.lower():
-                    continue
-                candidates.append(seq_num)
-
-            for mid in reversed(candidates):
-                if mid in seen_ids:
-                    continue
-                _, msg_data = conn.fetch(mid, '(RFC822)')
-                if not msg_data or not msg_data[0]:
-                    seen_ids.add(mid)
-                    continue
-                raw = msg_data[0][1]
-                msg = _email_lib.message_from_bytes(raw)
-                body = self._extract_body(msg)
-                links = list(dict.fromkeys(re.findall(r'https?://[^\s\'"<>\[\]]+', body)))
-                if not links:
-                    continue
-                if magic_patterns and not any(any(p in l for p in magic_patterns) for l in links):
-                    continue
-                seen_ids.add(mid)
-                return links, body[:400]
-        finally:
-            try:
-                conn.logout()
-            except Exception:
-                pass
-        return [], ''
-
-    @staticmethod
-    def _extract_body(msg) -> str:
-        parts = []
-        if msg.is_multipart():
-            for part in msg.walk():
-                if part.get_content_type() in ('text/plain', 'text/html'):
-                    try:
-                        parts.append(part.get_payload(decode=True).decode('utf-8', errors='replace'))
-                    except Exception:
-                        pass
-        else:
-            try:
-                parts.append(msg.get_payload(decode=True).decode('utf-8', errors='replace'))
-            except Exception:
-                pass
-        return '\n'.join(parts)
+# Alias mantenido por compatibilidad con código anterior (el header del archivo
+# y cualquier import legacy). El gate de Netflix usa FmailMailX.
+MailX = FmailMailX
+GmailMailX = FmailMailX

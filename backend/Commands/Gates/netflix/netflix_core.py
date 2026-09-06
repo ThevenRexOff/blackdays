@@ -21,7 +21,7 @@ from faker import Faker
 from curl_cffi import requests as curl
 from colorama import Fore
 from CSE.cseNetflixPayment import CseNetflixPayment
-from mailx import GmailMailX
+from mailx import FmailMailX
 
 #//! ------------------------------------- Class Netflix ------------------------------------- !\\#
 
@@ -50,7 +50,7 @@ class Netflix:
 
     EMAIL_DOMAINS = ('gmail.com', 'outlook.com', 'hotmail.com')
 
-    _mx = GmailMailX()   # Gmail IMAP catch-all — shopsxgitario.com / sxgitarioshop.com
+    _mx = FmailMailX()   # fmail.men — mismo proveedor que el generador de Amazon
 
     _hex = staticmethod(lambda n: ''.join(secrets.choice('0123456789abcdef') for _ in range(n)))
 

