@@ -65,12 +65,39 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _FAKERS = {}
 # fmail.men is a separate service — Amazon never sees its IP, so it always goes
-# direct (fast); only account traffic uses the REQ_PROXY below.
+# direct (fast); only account traffic uses the proxy below.
 _PROXY_URL = os.getenv("AMZN_PROXY") or os.getenv("REQ_PROXY")
+# Optional pool of proxies (newline or comma-separated in AMZN_PROXY_LIST).
+# Rotating between distinct exit IPs is the single biggest lever against the
+# step-4 Arkose captcha: once an IP is burned every fingerprint through it gets
+# escalated to PROOF_OF_WORK_LEVEL_3_CHAIN_ARKOSE_LEVEL_4, no matter the TLS.
+_PROXY_LIST = [
+    p.strip()
+    for p in re.split(r"[\n,]+", os.getenv("AMZN_PROXY_LIST", ""))
+    if p.strip()
+]
+_PROXY_QUEUE = list(_PROXY_LIST)
+
+
+def _pick_proxy():
+    """Return a proxy URL for one account, rotating through the pool.
+
+    If AMZN_PROXY_LIST is set, each attempt pops a different proxy from the
+    queue so a burned exit IP stops poisoning the whole run. Otherwise falls
+    back to the single AMZN_PROXY/REQ_PROXY (a rotating gateway usually gives a
+    fresh IP per connection on its own)."""
+    if _PROXY_QUEUE:
+        return _PROXY_QUEUE.pop(0)  # popped once = used once; never reused hot
+    return _PROXY_URL
 
 # User-Agent strings matched to each curl_cffi impersonate profile. Keeping the
 # UA header consistent with the TLS (JA3) fingerprint matters: Amazon flags a
 # chrome146 TLS handshake paired with a chrome131 UA as a bot giveaway.
+# Only profiles the installed curl_cffi actually supports are listed — a UA for
+# a target it can't impersonate (e.g. chrome151) made Amazon see a solvent
+# mismatch: the UA said one browser while the TLS handshake (silently falling
+# back to the default) was a totally different client. That alone is enough to
+# escalate step 4 to the Arkose challenge.
 _UA_MAP = {
     "chrome124": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "chrome131": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
@@ -78,31 +105,61 @@ _UA_MAP = {
     "chrome142": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "chrome145": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
     "chrome146": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
-    "chrome151": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+    "chrome150": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
     "safari180": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+    "safari260": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
     "firefox133": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+    "firefox144": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0",
 }
-# Allow overriding the TLS+UA profile at runtime via env var.
-# chrome131 (the previous default) now gets flagged by amazon.com US as
-# "automated traffic" — Amazon started rejecting its JA3 hash in late 2025.
-# chrome142 is the most stable choice across amazon.com US + all the other
-# regions (SA, MX, DE, BR…). It still passes amazon.com US on first try,
-# and the matching sec-ch-ua is kept in lockstep in _SEC_CH_UA below.
-_IMPERSONATE = os.getenv("AMZN_IMP", "chrome142")
-if _IMPERSONATE not in _UA_MAP:
-    log.warn(f"AMZN_IMP={_IMPERSONATE!r} no está en _UA_MAP — usando chrome142")
-    _IMPERSONATE = "chrome142"
-_UA = _UA_MAP[_IMPERSONATE]
+# Trick curl_cffi into using its "latest chrome" alias. `impersonate="chrome"`
+# always maps to the newest Chrome fingerprint the installed curl_cffi knows,
+# so after an upgrade the static JA3 set rotates for free.
+_UA_MAP["chrome"] = _UA_MAP["chrome150"]
+
+# List of impersonate targets curl_cffi 0.15+ actually validates. Anything
+# outside this raises ImpersonateError at request time (the session object,
+# surprisingly, does NOT validate until the first request is sent).
+_SUPPORTED_PROFILES = frozenset(
+    ["chrome99","chrome100","chrome101","chrome104","chrome107","chrome110",
+     "chrome116","chrome119","chrome120","chrome123","chrome124","chrome131",
+     "chrome133a","chrome136","chrome142","chrome145","chrome146","chrome150",
+     "chrome","firefox133","firefox135","firefox144","firefox147","safari153",
+     "safari155","safari170","safari180","safari184","safari260"]
+)
+
+# Allow overriding the TLS+UA profile at runtime via env var. Default keeps
+# rotating across a few modern builds instead of pinning a single JA3 hash —
+# a farm that always speaks the identical TLS fingerprint is itself a bot
+# signal. chrome131 (the previous default) now gets flagged by amazon.com US
+# as "automated traffic" — Amazon started rejecting its JA3 hash in late 2025.
+_DEFAULT_PROFILES = ["chrome142", "chrome145", "chrome146", "chrome150", "chrome"]
+
+_IMPERSONATE = os.getenv("AMZN_IMP", "").strip()
+if _IMPERSONATE and _IMPERSONATE not in _SUPPORTED_PROFILES:
+    log.warn(f"AMZN_IMP={_IMPERSONATE!r} no es un target válido de curl_cffi — usando rotación")
+    _IMPERSONATE = ""
+if not _IMPERSONATE:
+    _IMPERSONATE = random.choice(_DEFAULT_PROFILES)
 
 
-def _profile_ua():
-    return _UA_MAP.get(_IMPERSONATE, _UA)
+def _pick_tls_profile():
+    """Pick (impersonate, ua, sec_ch_ua|None) for a single account.
+
+    Rotating the TLS+UA per account means Amazon can't fingerprint the whole
+    farm as one client. Returns None sec_ch_ua for Firefox/Safari (those
+    engines never send Client-Hints on their own)."""
+    if os.getenv("AMZN_IMP", "").strip():
+        imp = _IMPERSONATE
+    else:
+        imp = random.choice(_DEFAULT_PROFILES)
+    ua = _UA_MAP.get(imp, _UA_MAP["chrome142"])
+    return imp, ua, _profile_sec_ch_ua(imp)
 
 
 # sec-ch-ua has to match the major version in the UA — otherwise the
 # client-hints and the TLS fingerprint disagree, and Amazon's bot detector
 # raises the "unusual activity" page instead of letting the register POST
-# through. Keep these in lockstep with _IMPERSONATE.
+# through. Keep these in lockstep with the impersonate profile.
 _SEC_CH_UA = {
     "chrome124": '"Chromium";v="124", "Not-A.Brand";v="99", "Google Chrome";v="124"',
     "chrome131": '"Chromium";v="131", "Not_A Brand";v="24", "Google Chrome";v="131"',
@@ -110,12 +167,18 @@ _SEC_CH_UA = {
     "chrome142": '"Chromium";v="142", "Not-A.Brand";v="99", "Google Chrome";v="142"',
     "chrome145": '"Chromium";v="145", "Not-A.Brand";v="99", "Google Chrome";v="145"',
     "chrome146": '"Chromium";v="146", "Not-A.Brand";v="99", "Google Chrome";v="146"',
-    "chrome151": '"Chromium";v="151", "Not-A.Brand";v="99", "Google Chrome";v="151"',
+    "chrome150": '"Chromium";v="150", "Not-A.Brand";v="99", "Google Chrome";v="150"',
+    "chrome":    '"Chromium";v="150", "Not-A.Brand";v="99", "Google Chrome";v="150"',
 }
 
 
-def _profile_sec_ch_ua():
-    return _SEC_CH_UA.get(_IMPERSONATE, _SEC_CH_UA["chrome131"])
+def _profile_sec_ch_ua(profile=None):
+    profile = profile or _IMPERSONATE
+    # Firefox / Safari never send Client-Hints; forcing any sec-ch-ua on them
+    # is itself a fingerprint mismatch for Amazon's detector.
+    if profile.startswith("firefox") or profile.startswith("safari"):
+        return None
+    return _SEC_CH_UA.get(profile, _SEC_CH_UA["chrome142"])
 
 
 def _tick(t0, label):
@@ -257,28 +320,27 @@ def _arb_from_text(text):
 
 # ── Session builder ──────────────────────────────────────────────────────────
 
-def build_session(proxy=None, country_code="US") -> AsyncSession:
+def build_session(proxy=None, country_code="US", tls_profile=None) -> AsyncSession:
     # Per-request HTTP session: 20s timeout (vaultproxies can be slow on
     # transatlantic hops), 2 retries per request.
-    session = AsyncSession(retry=2, impersonate=_IMPERSONATE, timeout=20.0)
+    if tls_profile is None:
+        tls_profile = _pick_tls_profile()
+    imp_name, imp_ua, imp_sec_ch_ua = tls_profile
+    # A profile that curl_cffi can't impersonate would silently fall back to a
+    # different TLS handshake than the UA claims — that mismatch is exactly the
+    # signal that escalates step 4 to the Arkose challenge. Fail fast instead.
+    if imp_name not in _SUPPORTED_PROFILES:
+        raise ValueError(f"Unsupported impersonate target: {imp_name!r}")
+    session = AsyncSession(retry=2, impersonate=imp_name, timeout=20.0)
     session.trust_env = False
     config = COUNTRY_CONFIG.get(country_code, COUNTRY_CONFIG["US"])
     accept_lang = config.get("accept_language", "en-US,en;q=0.9")
     session.headers.update({
         "Upgrade-Insecure-Requests": "1",
-        "User-Agent": _profile_ua(),
-        "sec-ch-ua": _profile_sec_ch_ua(),
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": '"Windows"',
-        "device-memory": "8",
+        "User-Agent": imp_ua,
         "downlink": "1.5",
-        "dpr": "1",
         "ect": "4g",
         "rtt": "100",
-        "sec-ch-device-memory": "8",
-        "sec-ch-dpr": "1",
-        "sec-ch-viewport-height": "803",
-        "sec-ch-viewport-width": "1240",
         "viewport-width": "1240",
         "Accept": (
             "text/html,application/xhtml+xml,application/xml;"
@@ -293,6 +355,20 @@ def build_session(proxy=None, country_code="US") -> AsyncSession:
         "Sec-Fetch-Site": "none",
         "Sec-Fetch-User": "?1",
     })
+    # sec-ch-* Client-Hints only exist for Chromium — Firefox/Safari never
+    # send them, so injecting them would contradict the UA/TLS fingerprint.
+    if imp_sec_ch_ua:
+        session.headers.update({
+            "sec-ch-ua": imp_sec_ch_ua,
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "device-memory": "8",
+            "dpr": "1",
+            "sec-ch-device-memory": "8",
+            "sec-ch-dpr": "1",
+            "sec-ch-viewport-height": "803",
+            "sec-ch-viewport-width": "1240",
+        })
     if proxy:
         session.proxies = {"http": proxy, "https": proxy}
     return session
@@ -567,7 +643,14 @@ async def _create_email_once(country_code="US"):
     temp_mail = TempMail(proxy=None)
     mail_task = asyncio.create_task(temp_mail.get_address())
 
-    session = build_session(proxy=_PROXY_URL, country_code=country_code)
+    # One TLS+UA profile per account: keeps the JA3 fingerprint legal/rotating
+    # instead of a farm-wide static handshake, and keeps the fingerprint
+    # (metadata1) in lockstep with the session's UA.
+    tls_profile = _pick_tls_profile()
+    imp_name, ua, _ = tls_profile
+    log.info("TLS profile", imp_name)
+
+    session = build_session(proxy=_pick_proxy(), country_code=country_code, tls_profile=tls_profile)
 
     try:
         r_fresh = await session.get(
@@ -613,7 +696,7 @@ async def _create_email_once(country_code="US"):
     claim_dwell_ms = int((time.time() - t_signin) * 1000)
     claim_fp = generate_metadata1(
         email=email_address,
-        user_agent=_UA,
+        user_agent=ua,
         location=signin_url,
         html_b64=base64.b64encode(signin_html.encode()).decode(),
         dwell_ms=claim_dwell_ms,
@@ -791,7 +874,7 @@ async def _create_email_once(country_code="US"):
         password=password,
         name=f"{first_name} {last_name}",
         password_check=password,
-        user_agent=_profile_ua(),
+        user_agent=ua,
         location=req_3.url,
         html_b64=base64.b64encode(req_3.text.encode()).decode(),
         dwell_ms=reg_dwell_ms,
@@ -835,6 +918,20 @@ async def _create_email_once(country_code="US"):
         or ("clientContext" in req_4.text and "verifyToken" in req_4.text)
     )
 
+    # Two very different failure modes share the same "captcha" page:
+    #  - PROOF_OF_WORK_LEVEL_1: metadata1/POW was accepted; the server wants a
+    #    tiny bit of proof — usually still pass-through in a real browser. A
+    #    fresh session+IP often clears it.
+    #  - PROOF_OF_WORK_LEVEL_3_CHAIN_ARKOSE_LEVEL_4: the risk engine scored the
+    #    client high (flagged IP+UA+fingerprint combo). This needs an Arkose
+    #    puzzle — retrying endlessly on the same proxy pool will never clear it.
+    arkose_escalated = has_captcha and (
+        "cvf-aamation-challenge-iframe" in req_4.text
+        or "ARKOSE" in req_4.text.upper()
+        or "PROOF_OF_WORK_LEVEL_3" in req_4.text
+        or "PROOF_OF_WORK_LEVEL_4" in req_4.text
+    )
+
     req_after = req_4
     _tick(t0, "register_post")
     if not has_captcha:
@@ -845,9 +942,13 @@ async def _create_email_once(country_code="US"):
                 df.write(req_4.text)
         except Exception:
             pass
-        # Si llegamos aquí con un fingerprint correcto, el server aún así
-        # devolvió un challenge. Marcamos para retry con nueva IP/email.
-        log.warn("Captcha detectado — se reintentará con nueva IP")
+        if arkose_escalated:
+            log.warn(
+                "Captcha ARKOSE/POW-Level-3 — IP/TLS flagado, rotar proxy; "
+                "se reintentará con nueva IP + nuevo TLS"
+            )
+        else:
+            log.warn("Captcha POW-Level-1 detectado — se reintentará con nueva IP")
         return "captcha"
 
     # If Amazon re-rendered the register form, the REGISTER POST was rejected.
@@ -898,7 +999,7 @@ async def _create_email_once(country_code="US"):
         # Human reads the email and types the code — dwell includes the wait.
         otp_dwell_ms = int((time.time() - t_otp) * 1000)
         res_otp = generate_metadata1(
-            otp=otp_code, user_agent=_UA,
+            otp=otp_code, user_agent=ua,
             location=req_after.url,
             html_b64=base64.b64encode(req_after.text.encode()).decode(),
             dwell_ms=otp_dwell_ms,
