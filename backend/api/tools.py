@@ -149,11 +149,12 @@ def cmd_amz_generator(params: dict) -> dict:
     """Amazon account/cookie generator. Requires `country` (US/MX/CA/…).
     Proxy resolution order:
       1. Explicit `proxy` query param (one-off testing)
-      2. JP only — php/proxies_jp.txt regional pool (amazon.co.jp rejects
-         non-JP residential IPs, so JP gets its own geo-locked proxy).
-      3. Every other country — global AMZN_PROXY/REQ_PROXY from the env,
-         the single non-geo residential proxy that covers amazon.com,
-         amazon.com.mx, amazon.ca, amazon.co.uk, amazon.de, etc.
+      2. Regional geo pool from php/proxies_<region>.txt — US, MX, JP each read
+         their own residential pool (amazon.co.jp rejects non-JP IPs so JP is
+         geo-locked); every other country falls back to the US pool, the least
+         fingerprinted endpoint that also covers .mx/.ca/.co.uk/.de/.fr/.it/
+         .es/.nl/.com.sg/.com.au/.com.br via geo-redirect.
+      3. AMZN_PROXY/REQ_PROXY from the env as a final fallback.
     """
     country, proxy = get_params(params, {}, 'country', 'proxy')
     country = (country or '').strip().upper()
@@ -164,16 +165,21 @@ def cmd_amz_generator(params: dict) -> dict:
     if country not in COUNTRIES:
         return {'status': False, 'error':
                 f'Invalid country [{country}]. Supported: {", ".join(COUNTRIES.keys())}'}
-    # JP reads its own regional pool; every other country uses the global
-    # proxy from the env. No fallback to the per-country pool for non-JP
-    # so the proxy behaves as a single non-geo residential endpoint.
-    if not proxy and country == 'JP':
+    # JP reads its own regional pool; every other country reads its own
+    # geo pool (US→proxies_us.txt, MX→proxies_mx.txt). Countries without a
+    # dedicated pool fall back to the US residential pool, since amazon.com
+    # residential US is the least-fingerprinted endpoint and it also covers
+    # amazon.com.mx / .ca / .co.uk / .de / .fr / .it / .es / .nl / .com.sg /
+    # .com.au / .com.br via geo-redirect.
+    if not proxy:
         from api.proxies import get_proxy
-        proxy = get_proxy('JP')
+        if country in ('US', 'MX', 'JP'):
+            region = 'JP' if country == 'JP' else country
+        else:
+            region = 'us'
+        proxy = get_proxy(region)
     if not proxy:
         proxy = (os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or '').strip()
-    if not proxy:
-        proxy = 'b4ab6bbd7b83fecd:7ad3a6559050089d@gate-eu.vaultproxies.com:80'
     result = _generate_cookie(country, proxy)
     if not result or not result.get('status'):
         return {'status': False, 'error':
