@@ -18,11 +18,14 @@ echo "==> rsync $LOCAL -> $REMOTE:$DEST"
 rsync -azcP "${EXCLUDES[@]}" "$LOCAL"/ "$REMOTE:$DEST"/ >&2
 
 if [[ "${1:-}" == "fast" ]]; then
-  echo "==> fast mode: restart api"
-  ssh "$REMOTE" "cd $DEST && docker compose restart api"
+  echo "==> fast mode: restart api (recarga módulos .py bind-mounteados)"
+  ssh "$REMOTE" "cd $DEST && docker compose up -d --force-recreate --no-build api"
 else
-  echo "==> rebuild + up"
-  ssh "$REMOTE" "cd $DEST && docker compose up -d --build"
+  echo "==> rebuild + recreate"
+  # --force-recreate garantiza nuevo proceso Python: el código viaja por bind
+  # mount (/app) y sin recreate-app un up -d no detecta cambios de .py ni recarga
+  # los módulos ya importados en memoria.
+  ssh "$REMOTE" "cd $DEST && docker compose up -d --build --force-recreate"
 fi
 
 sleep 3
