@@ -65,7 +65,8 @@ def get_montos(monto):
     return None
 ###########№########################################
 fake = Faker("es_MX")
-get_ua = lambda: UserAgent(platforms='mobile').random
+_UA_STORE = UserAgent(platforms='mobile')
+get_ua = lambda: _UA_STORE.random
 email = lambda: f"{fake.user_name()}@{random.choice(['gmail.com', 'yahoo.com', 'live.mx', 'outlook.com'])}"
 post_code = random.randint(10000, 16999)
 
