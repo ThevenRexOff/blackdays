@@ -20,10 +20,17 @@ def _checker(cc, binData, proxy=None, capsolver_key=''):
 def run_check(cc, bin_data, ctx=None):
     from api.proxies import get_proxy as _pool_proxy
     ctx = ctx or {}
-    proxy = (ctx.get('proxy') or '') or _pool_proxy('MX')  # fallback: rotate geo-mx pool
     capsolver = (ctx.get('capsolver_key') or '') or os.getenv('CAPSOLVER_KEY', '')
-    r = _checker(cc, bin_data, proxy=proxy, capsolver_key=capsolver)
-    if not r.get('status'):
-        return {'status': 'Error ⚠️', 'response': r.get('raise') or r.get('message', 'Gate error')}
-    return {'status': 'Approved ✅' if r.get('success') else 'Declined ❌',
-            'response': r.get('response') or r.get('apiResponse') or ''}
+    card = f'{cc[0]}|{cc[1]}|{cc[2]}|{cc[3]}'
+    last_exc = None
+    for _attempt in range(4):
+        proxy = (ctx.get('proxy') or '') or _pool_proxy('MX')  # rotate on each attempt
+        try:
+            r = _checker(cc, bin_data, proxy=proxy, capsolver_key=capsolver)
+            if r.get('status'):
+                return {'status': 'Approved ✅' if r.get('success') else 'Declined ❌',
+                        'response': r.get('response') or r.get('apiResponse') or ''}
+            last_exc = r.get('raise') or r.get('message', 'Gate error')
+        except Exception as e:
+            last_exc = str(e)[:300]
+    return {'status': 'Error ⚠️', 'response': last_exc}

