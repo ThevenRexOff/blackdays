@@ -47,13 +47,27 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const bcrypt = await import('bcryptjs')
+    const trimmedTg = String(body.telegramId || '').trim()
+    if (!/^\d{5,}$/.test(trimmedTg)) {
+      return NextResponse.json(
+        { error: 'El ID de Telegram debe ser un número válido (mínimo 5 dígitos)' },
+        { status: 400 },
+      )
+    }
+    const existingTg = await prisma.user.findFirst({ where: { telegramId: trimmedTg } })
+    if (existingTg) {
+      return NextResponse.json(
+        { error: 'Este ID de Telegram ya está registrado con otra cuenta' },
+        { status: 400 },
+      )
+    }
     const hashedPassword = await bcrypt.hash(body.password || '123456', 10)
 
     const user = await prisma.user.create({
       data: {
         username: body.username,
         password: hashedPassword,
-        telegramId: body.telegramId || '',
+        telegramId: trimmedTg,
         rank: body.rank || 'user',
         credits: body.credits ?? 0,
         membershipExpiresAt: body.membershipExpiresAt ? new Date(body.membershipExpiresAt) : null,

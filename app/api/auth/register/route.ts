@@ -13,6 +13,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const trimmedTg = String(telegramId).trim()
+    if (!/^\d{5,}$/.test(trimmedTg)) {
+      return NextResponse.json(
+        { error: 'El ID de Telegram debe ser un número válido (mínimo 5 dígitos)' },
+        { status: 400 },
+      )
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { username },
     })
@@ -20,6 +28,17 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: 'El usuario ya está registrado' },
+        { status: 400 },
+      )
+    }
+
+    const existingTg = await prisma.user.findFirst({
+      where: { telegramId: trimmedTg },
+    })
+
+    if (existingTg) {
+      return NextResponse.json(
+        { error: 'Este ID de Telegram ya está registrado con otra cuenta' },
         { status: 400 },
       )
     }
@@ -46,7 +65,7 @@ export async function POST(request: NextRequest) {
           data: {
             username,
             password: hashedPassword,
-            telegramId,
+            telegramId: trimmedTg,
             credits: dbKey.credits,
             rank: dbKey.rank || 'premium',
             membershipExpiresAt,

@@ -30,6 +30,13 @@ export default function SignUpPage() {
       return
     }
 
+    const numericTg = telegramId.trim()
+    if (!/^\d{5,}$/.test(numericTg)) {
+      setError('El ID de Telegram debe ser un número válido (mínimo 5 dígitos)')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -37,7 +44,7 @@ export default function SignUpPage() {
         body: JSON.stringify({
           username,
           password,
-          telegramId: telegramId || null,
+          telegramId: numericTg,
           key: activationKey,
         }),
       })
@@ -114,10 +121,12 @@ export default function SignUpPage() {
               <label className="mb-1 block font-mono-cyber text-[10px] uppercase tracking-widest text-purple-500">TELEGRAM ID</label>
               <Input
                 type="text"
-                placeholder="> Tu ID de Telegram..."
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="> Tu ID numérico de Telegram (ej. 123456789)..."
                 required
                 value={telegramId}
-                onChange={(e) => setTelegramId(e.target.value)}
+                onChange={(e) => setTelegramId(e.target.value.replace(/\D/g, ''))}
                 className="h-11 border-purple-900/50 bg-black/50 font-mono-cyber text-sm text-white placeholder-purple-900/50 focus:border-purple-500 focus:ring-purple-500/20"
               />
             </div>
