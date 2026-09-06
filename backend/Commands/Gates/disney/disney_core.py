@@ -225,7 +225,7 @@ def processDisneyFlow(cardInput: str, proxy: str | None = None, capsolver_key: s
         # Detect non-MX proxy geo-block early so the user gets a clear message
         # instead of a stack-trace-looking parse error from the signup step.
         raw = str(e)
-        if 'Forbidden location' in raw or 'token.service.unau' in raw or 'upstream' in raw.lower():
+        if ('Forbidden location' in raw or 'token.service.unau' in raw) and 'upstream' in raw:
             return {'status': False, 'message': '[registerDevice] Proxy MX requerido — Disney bloqueó la región del proxy (Forbidden location). Configura un proxy mexicano.',
                     'card': f"{card['number']}|{card['month']}|{card['year']}|{card['cvv']}",
                     'retries': str(retries), 'gateway': 'Disney+ Plans Subscription'}
