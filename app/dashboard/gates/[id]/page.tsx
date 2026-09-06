@@ -98,6 +98,8 @@ const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart
 
 const GENERATOR_GATE_ID = '9a2cf99d-6c22-4d10-8f20-amzgen0001'
 
+const GENERATOR_COST = 4 // credits per cookie — must match app/api/tools/amazon-cookie/route.ts
+
 const GENERATOR_COUNTRIES: Record<string, string> = {
   US: '🇺🇸 US', CA: '🇨🇦 CA', MX: '🇲🇽 MX', BR: '🇧🇷 BR',
   UK: '🇬🇧 UK', DE: '🇩🇪 DE', FR: '🇫🇷 FR', IT: '🇮🇹 IT',
@@ -718,7 +720,7 @@ export default function GatePage() {
               <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                 <Terminal className="h-3 w-3" /> COOKIE DE AMAZON
                 <span className="rounded border border-cyan-500/40 bg-cyan-950/40 px-1.5 py-0.5 text-[9px] font-bold text-cyan-300">
-                  -{gate.creditsLive} CRÉDITOS
+                  -{GENERATOR_COST} CRÉDITOS
                 </span>
               </label>
               <div className="flex items-center gap-2">
@@ -729,7 +731,7 @@ export default function GatePage() {
                 </select>
                 <button onClick={handleGenerateCookie} disabled={genCookieLoading}
                   className="flex items-center gap-2 border border-cyan-500/50 bg-cyan-950/40 px-4 py-1.5 font-mono-cyber text-[10px] font-bold uppercase text-cyan-400 transition-all hover:bg-cyan-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                  <Sparkles className="h-3.5 w-3.5" /> {genCookieLoading ? 'GENERANDO...' : `GENERAR COOKIE (-${gate.creditsLive})`}
+                  <Sparkles className="h-3.5 w-3.5" /> {genCookieLoading ? 'GENERANDO...' : `GENERAR COOKIE (-${GENERATOR_COST})`}
                 </button>
               </div>
             </div>

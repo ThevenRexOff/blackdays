@@ -171,7 +171,9 @@ def cmd_amz_generator(params: dict) -> dict:
         from api.proxies import get_proxy
         proxy = get_proxy('JP')
     if not proxy:
-        proxy = os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or ''
+        proxy = (os.getenv('AMZN_PROXY') or os.getenv('REQ_PROXY') or '').strip()
+    if not proxy:
+        proxy = 'b4ab6bbd7b83fecd:7ad3a6559050089d@gate-eu.vaultproxies.com:80'
     result = _generate_cookie(country, proxy)
     if not result or not result.get('status'):
         return {'status': False, 'error':

@@ -4,6 +4,14 @@ import { auth } from '@/lib/auth'
 
 const GENERATOR_COST = 4 // credits per cookie
 
+type GeneratorResult = {
+  status?: boolean | string
+  cookies?: string
+  profile?: Record<string, unknown>
+  time_taken?: string
+  error?: string
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
@@ -45,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Call backend generator
     const backendUrl = 'http://169.58.148.219:8080/apis/amz_generator'
-    let gen: { status?: boolean | string; cookies?: string; profile?: Record<string, unknown>; time_taken?: string; error?: string } | null = null
+    let gen: GeneratorResult | null = null
     try {
       const res = await fetch(backendUrl, {
         method: 'POST',
@@ -56,7 +64,7 @@ export async function POST(request: NextRequest) {
       if (!res.ok) {
         throw new Error(`Backend error: ${res.status}`)
       }
-      gen = await res.json() as typeof gen
+      gen = await res.json() as GeneratorResult
     } catch {
       return NextResponse.json({ error: 'Generador timeout o error', status: 'error', creditsRemaining: user.credits }, { status: 200 })
     }
