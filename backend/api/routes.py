@@ -62,6 +62,11 @@ GROUPS = [
         _route('GET', '/apis/gate/disney', 'Disney+ Plans MX (needs CAPSOLVER_KEY)', {'card': 'cc|mm|yy|cvv'}, gate_run),
         _route('GET', '/apis/gate/sfy', 'Shopify Checkout — needs website (alias: shopify)', {'card': 'cc|mm|yy|cvv', 'website': 'https://tienda.com', 'address': 'optional JSON', 'email': 'optional', 'product': 'optional JSON', 'proxy': 'optional'}, gate_run),
         _route('GET', '/apis/gate/shopify', 'Shopify Checkout — needs website', {'card': 'cc|mm|yy|cvv', 'website': 'https://tienda.com', 'address': 'optional JSON', 'email': 'optional', 'product': 'optional JSON', 'proxy': 'optional'}, gate_run),
+        _route('GET', '/apis/gate/nmi', 'NMI Donation (AIA) — CC|MM|YY|CVV', {'card': 'cc|mm|yy|cvv', 'proxy': 'optional'}, gate_run),
+        _route('GET', '/apis/gate/payrix', 'Payrix GiveDirect — CC|MM|YY|CVV', {'card': 'cc|mm|yy|cvv', 'proxy': 'optional'}, gate_run),
+        _route('GET', '/apis/gate/payezzy', 'Payeezy Auth @ seocontenthero — CC|MM|YY|CVV', {'card': 'cc|mm|yy|cvv', 'proxy': 'optional'}, gate_run),
+        _route('GET', '/apis/gate/facturas', 'Telcel Facturas — bill pay, necesita number', {'card': 'cc|mm|yy|cvv', 'number': '10 digits phone', 'proxy': 'optional'}, gate_run),
+        _route('GET', '/apis/gate/liverpool', 'Liverpool Saldo (IVR + Twilio) — CC|MM|YY|CVV', {'card': 'cc|mm|yy|cvv'}, gate_run),
     ]),
     ('post', [
         _route('POST', '/apis/gate', 'Run any gate (JSON body: gate, card, phone, monto, cookie)', {'body': '{"gate":"mj","card":"...|..|..|.."}'}, gate_run),

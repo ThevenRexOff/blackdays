@@ -2,10 +2,16 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir \
-    curl_cffi faker requests aiohttp pycryptodome fake_useragent \
-    beautifulsoup4 luhn cryptography colorama psycopg2-binary \
-    Pillow numpy aiofiles python-dotenv lxml rich flask waitress
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN python -m playwright install --with-deps chromium || python -m playwright install chromium || true
+
+COPY . .
 
 EXPOSE 8080
 

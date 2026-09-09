@@ -762,8 +762,17 @@ export default function GatePage() {
           </div>
         )}
 
-        {gate.category === 'phone' && (
-          <div className="grid grid-cols-2 gap-4">
+        {gate.category === 'phone' && (() => {
+          const gateName = gate.apiUrl?.split('/').pop() || ''
+          const isBillGate = gateName === 'facturas'
+          const montosMap: Record<string, string[]> = {
+            'telcel': ['20', '30', '50', '80', '100', '150', '200', '300', '500'],
+            'zb': ['10', '20', '30', '50', '80', '100', '150', '200', '300', '500'],
+            'ps': ['50', '100', '200', '300', '500'],
+          }
+          const montos = montosMap[gateName] || ['10', '20', '30', '50', '100', '200', '300', '500']
+          return (
+          <div className={`grid ${isBillGate ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
             <div className="relative overflow-hidden cyber-clip border border-yellow-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(234,179,8,0.1)]">
               <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-yellow-400">
                 <Terminal className="h-3 w-3" /> TELÉFONO
@@ -775,32 +784,24 @@ export default function GatePage() {
                 className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-yellow-300 placeholder-yellow-900/50 focus:border-yellow-400 focus:outline-none border border-yellow-900/50"
               />
             </div>
+            {!isBillGate && (
             <div className="relative overflow-hidden cyber-clip border border-emerald-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]">
               <label className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
                  <Terminal className="h-3 w-3" /> MONTO
                </label>
-               {(() => {
-                 const gateName = gate.apiUrl?.split('/').pop() || ''
-                 const montosMap: Record<string, string[]> = {
-                   'telcel': ['20', '30', '50', '80', '100', '150', '200', '300', '500'],
-                   'zb': ['10', '20', '30', '50', '80', '100', '150', '200', '300', '500'],
-                   'ps': ['50', '100', '200', '300', '500'],
-                 }
-                 const montos = montosMap[gateName] || ['10', '20', '30', '50', '100', '200', '300', '500']
-                 return (
-                   <select
-                     value={montoInput}
-                     onChange={(e) => setMontoInput(e.target.value)}
-                     className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-emerald-300 placeholder-emerald-900/50 focus:border-emerald-400 focus:outline-none border border-emerald-900/50"
-                   >
-                     <option value="">-- Selecciona monto --</option>
-                     {montos.map((m) => <option key={m} value={m}>{m}</option>)}
-                   </select>
-                 )
-               })()}
+               <select
+                 value={montoInput}
+                 onChange={(e) => setMontoInput(e.target.value)}
+                 className="w-full bg-black/50 px-3 py-2 font-mono-cyber text-sm text-emerald-300 placeholder-emerald-900/50 focus:border-emerald-400 focus:outline-none border border-emerald-900/50"
+               >
+                 <option value="">-- Selecciona monto --</option>
+                 {montos.map((m) => <option key={m} value={m}>{m}</option>)}
+               </select>
             </div>
+            )}
           </div>
-        )}
+          )
+        })()}
 
         {gate.category === 'shopify' && (
           <div className="relative overflow-hidden cyber-clip border border-orange-500/50 bg-black/90 p-4 shadow-[inset_0_0_20px_rgba(249,115,22,0.1)]">

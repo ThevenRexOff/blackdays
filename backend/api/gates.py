@@ -29,6 +29,11 @@ _RUN_CHECK_GATES = {
     'shopify': 'gates.shopify',
     'amz':  'gates.amazon',
     'amazon': 'gates.amazon',
+    'nmi':  'gates.nmi',
+    'payrix': 'gates.payrix',
+    'payezzy': 'gates.payezzy',
+    'facturas': 'gates.facturas',
+    'liverpool': 'gates.liverpool',
 }
 
 _ALIASES = {
@@ -37,6 +42,9 @@ _ALIASES = {
     'em': 'netflix', 'netflix': 'netflix',
     'ds': 'disney', 'disney': 'disney',
     'telmex': 'zb', 'bait': 'ps', 'sfy': 'shopify',
+    'nmi': 'nmi', 'payrix': 'payrix', 'payezzy': 'payezzy',
+    'facturas': 'facturas', 'telcel_bill': 'facturas', 'bills': 'facturas',
+    'liverpool': 'liverpool', 'saldo': 'liverpool', 'saldoL': 'liverpool',
 }
 
 # Parameters each gate REQUIRES beyond `card`. Missing ones produce a 4xx.
@@ -46,6 +54,7 @@ _GATE_REQUIRED = {
     'telcel': ('phone',),
     'ps': ('phone',),
     'zb': ('phone',),
+    'facturas': (('number', 'phone'),),
     'shopify': (('website', 'url', 'site'),),
     'netflix': (), 'disney': (),
 }
@@ -89,6 +98,10 @@ def _run_one(cc_parts: list, bin_data: dict, gate: str, params: dict) -> dict:
                 if proxy:
                     kwargs['proxy'] = proxy
                 return normalized(checker(cc_parts, bin_data, **kwargs))
+    if gate in ('facturas', 'liverpool'):
+        number = (params or {}).get('number') or (params or {}).get('phone') or ''
+        if number:
+            ctx.setdefault('number', number)
     fn = getattr(mod, 'run_check', None)
     if not callable(fn):
         return {'status': 'Error ⚠️', 'response': f'Gate [{gate}] has no run_check'}
@@ -159,8 +172,8 @@ def gate_run(params: dict) -> dict:
         result['time_taken'] = round(time.time() - t0, 2)
         return result
 
-    name, card, phone, monto, cookie, proxy = get_params(params, {},
-                                                        'gate', 'card', 'phone', 'monto', 'cookie', 'proxy')
+    name, card, phone, monto, cookie, proxy, number = get_params(params, {},
+                                                                 'gate', 'card', 'phone', 'monto', 'cookie', 'proxy', 'number')
     name = (name or '').lower().strip()
     gate = _ALIASES.get(name, name)
     if gate not in _RUN_CHECK_GATES and gate not in ('amazon', 'telcel', 'netflix', 'disney'):
@@ -177,7 +190,7 @@ def gate_run(params: dict) -> dict:
         return {'status': False, 'code': 'MISSING_PARAM',
                 'error': f"Gate [{gate}] is missing required parameter(s): {', '.join(missing)}"}
 
-    extra = {'phone': phone, 'monto': monto, 'cookie': cookie, 'proxy': proxy}
+    extra = {'phone': phone, 'monto': monto, 'cookie': cookie, 'proxy': proxy, 'number': number}
 
     parsed = parse_card(card)
     if not parsed.get('status'):
