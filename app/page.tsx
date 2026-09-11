@@ -71,7 +71,7 @@ export default function LandingPage() {
         'Estadísticas en tiempo real',
         'Acceso prioritario a nuevos Gates',
         'Canal de soporte exclusivo 24/7',
-        'Ancho de banda de 50MB/s',
+        'Threads prioritarios',
         'Logs históricos guardados por 7 días'
       ],
       cta: 'Adquirir Patente',
@@ -93,7 +93,7 @@ export default function LandingPage() {
         'Prioridad de ejecución ultra-alta',
         'Logs históricos ilimitados',
         'Acceso API directa sin restricciones',
-        'Panel de control de amenazas avanzado',
+        'Panel de control avanzado',
         'Soporte dedicado personalizado'
       ],
       cta: 'Comandar Flota',
@@ -409,7 +409,8 @@ export default function LandingPage() {
               onClick={() => setIsRenta(true)}
               className={`px-4 py-2 font-mono-cyber text-xs uppercase transition-all duration-300 flex items-center gap-1.5 ${isRenta ? 'bg-purple-600 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
             >
-              Renta <span className="bg-purple-950 text-purple-400 border border-purple-500/20 text-[9px] px-1 py-0.5 rounded uppercase font-black tracking-widest">-20%</span>
+              Renta
+              {/* <span className="bg-purple-950 text-purple-400 border border-purple-500/20 text-[9px] px-1 py-0.5 rounded uppercase font-black tracking-widest"></span> */}
             </button>
           </div>
         </div>
