@@ -36,13 +36,17 @@ export default function LandingPage() {
   // Pricing Plans
   const plans = [
     {
-      name: 'Corsario Neón',
+      nameRenta: 'Premium Semanal',
+      nameCredits: 'Plan Basic',
       tag: 'Básico',
-      description: 'Ideal para exploradores novatos y entusiastas de las redes.',
-      priceCredits: 100,
-      priceRenta: 150,
+      descriptionRenta: 'Acceso ilimitado a gateways durante 7 días.',
+      descriptionCredits: '150 créditos para verificaciones.',
+      priceCreditsMXN: 140,
+      priceCreditsUSD: 8.65,
+      priceRentaMXN: 200,
+      priceRentaUSD: 11.54,
       features: [
-        isRenta ? '1 Gateway básico activo' : 'Todos los Gateways disponibles',
+        isRenta ? 'Acceso ilimitado 7 días' : 'Todos los Gateways disponibles',
         'Estadísticas con delay de 5 min',
         'Soporte comunitario en Telegram',
         'Cifrado de datos básico',
@@ -53,13 +57,17 @@ export default function LandingPage() {
       color: 'border-gray-800'
     },
     {
-      name: 'Capitán Cibernético',
+      nameRenta: 'Premium Quincenal',
+      nameCredits: 'Plan Plus',
       tag: 'Recomendado',
-      description: 'Optimizado para navegantes frecuentes con flujos constantes.',
-      priceCredits: 200,
-      priceRenta: 250,
+      descriptionRenta: 'Acceso ilimitado a gateways durante 14 días.',
+      descriptionCredits: '320 créditos para verificaciones.',
+      priceCreditsMXN: 250,
+      priceCreditsUSD: 14.42,
+      priceRentaMXN: 350,
+      priceRentaUSD: 20.19,
       features: [
-        isRenta ? '10 Gateways avanzados activos' : 'Todos los Gateways disponibles',
+        isRenta ? 'Acceso ilimitado 14 días' : 'Todos los Gateways disponibles',
         'Estadísticas en tiempo real',
         'Acceso prioritario a nuevos Gates',
         'Canal de soporte exclusivo 24/7',
@@ -71,13 +79,17 @@ export default function LandingPage() {
       color: 'border-purple-900/50'
     },
     {
-      name: 'Almirante Cuántico',
+      nameRenta: 'Premium Mensual',
+      nameCredits: 'Plan Pro',
       tag: 'Flota Élite',
-      description: 'Para comandantes de flotas enteras y operaciones masivas.',
-      priceCredits: 400,
-      priceRenta: 500,
+      descriptionRenta: 'Acceso ilimitado a gateways durante 30 días.',
+      descriptionCredits: '700 créditos para verificaciones masivas.',
+      priceCreditsMXN: 450,
+      priceCreditsUSD: 25.96,
+      priceRentaMXN: 600,
+      priceRentaUSD: 34.62,
       features: [
-        isRenta ? 'Gateways ilimitados' : 'Todos los Gateways disponibles',
+        isRenta ? 'Acceso ilimitado 30 días' : 'Todos los Gateways disponibles',
         'Prioridad de ejecución ultra-alta',
         'Logs históricos ilimitados',
         'Acceso API directa sin restricciones',
@@ -405,7 +417,11 @@ export default function LandingPage() {
         {/* Pricing Cards Grid */}
         <div className="grid gap-8 md:grid-cols-3">
           {plans.map((p, i) => {
-            const price = isRenta ? p.priceRenta : p.priceCredits
+            const priceMXN = isRenta ? p.priceRentaMXN : p.priceCreditsMXN
+            const priceUSD = isRenta ? p.priceRentaUSD : p.priceCreditsUSD
+            const name = isRenta ? p.nameRenta : p.nameCredits
+            const description = isRenta ? p.descriptionRenta : p.descriptionCredits
+            
             return (
               <div
                 key={i}
@@ -419,16 +435,17 @@ export default function LandingPage() {
                 )}
 
                 <div>
-                  <h3 className="font-mono-cyber text-xl font-bold uppercase text-white mb-2">{p.name}</h3>
-                  <p className="text-xs text-gray-500 mb-6 font-sans leading-relaxed">{p.description}</p>
+                  <h3 className="font-mono-cyber text-xl font-bold uppercase text-white mb-2">{name}</h3>
+                  <p className="text-xs text-gray-500 mb-6 font-sans leading-relaxed">{description}</p>
 
-                  <div className="flex items-baseline gap-2 mb-8">
-                    <span className="font-mono-cyber text-4xl sm:text-5xl font-black text-white">${price}</span>
-                    {isRenta && (
+                  <div className="flex flex-col gap-1 mb-8">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-mono-cyber text-4xl sm:text-5xl font-black text-white">${priceMXN}</span>
                       <span className="font-mono-cyber text-xs uppercase text-gray-500">
-                        / Mes
+                        MXN
                       </span>
-                    )}
+                    </div>
+                    <span className="font-mono-cyber text-[10px] uppercase text-gray-400">≈ ${priceUSD} USD</span>
                   </div>
 
                   <hr className="border-purple-950/30 mb-6" />
