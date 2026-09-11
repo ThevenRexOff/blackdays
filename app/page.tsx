@@ -25,7 +25,7 @@ import { DashboardParticles } from '@/components/dashboard/dashboard-particles'
 
 export default function LandingPage() {
   const { data: session, status } = useSession()
-  const [isYearly, setIsYearly] = useState(false)
+  const [isRenta, setIsRenta] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
 
@@ -36,13 +36,13 @@ export default function LandingPage() {
   // Pricing Plans
   const plans = [
     {
-      name: 'Cabina de Grumete',
+      name: 'Corsario Neón',
       tag: 'Básico',
       description: 'Ideal para exploradores novatos y entusiastas de las redes.',
-      priceMonthly: 0,
-      priceYearly: 0,
+      priceCredits: 100,
+      priceRenta: 150,
       features: [
-        '1 Gateway básico activo',
+        isRenta ? '1 Gateway básico activo' : 'Todos los Gateways disponibles',
         'Estadísticas con delay de 5 min',
         'Soporte comunitario en Telegram',
         'Cifrado de datos básico',
@@ -53,13 +53,13 @@ export default function LandingPage() {
       color: 'border-gray-800'
     },
     {
-      name: 'Navío de Oficial',
+      name: 'Capitán Cibernético',
       tag: 'Recomendado',
       description: 'Optimizado para navegantes frecuentes con flujos constantes.',
-      priceMonthly: 49,
-      priceYearly: 39,
+      priceCredits: 200,
+      priceRenta: 250,
       features: [
-        '10 Gateways avanzados activos',
+        isRenta ? '10 Gateways avanzados activos' : 'Todos los Gateways disponibles',
         'Estadísticas en tiempo real',
         'Acceso prioritario a nuevos Gates',
         'Canal de soporte exclusivo 24/7',
@@ -71,13 +71,13 @@ export default function LandingPage() {
       color: 'border-purple-900/50'
     },
     {
-      name: 'Galeón de Capitán',
+      name: 'Almirante Cuántico',
       tag: 'Flota Élite',
       description: 'Para comandantes de flotas enteras y operaciones masivas.',
-      priceMonthly: 149,
-      priceYearly: 119,
+      priceCredits: 400,
+      priceRenta: 500,
       features: [
-        'Gateways ilimitados',
+        isRenta ? 'Gateways ilimitados' : 'Todos los Gateways disponibles',
         'Prioridad de ejecución ultra-alta',
         'Logs históricos ilimitados',
         'Acceso API directa sin restricciones',
@@ -388,16 +388,16 @@ export default function LandingPage() {
           {/* Monthly / Yearly Switcher */}
           <div className="inline-flex items-center gap-3 border border-purple-900/30 bg-[#0d0d12]/80 p-1.5 rounded-lg">
             <button
-              onClick={() => setIsYearly(false)}
-              className={`px-4 py-2 font-mono-cyber text-xs uppercase transition-all duration-300 ${!isYearly ? 'bg-purple-600 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setIsRenta(false)}
+              className={`px-4 py-2 font-mono-cyber text-xs uppercase transition-all duration-300 ${!isRenta ? 'bg-purple-600 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
             >
-              Mensual
+              Creditos
             </button>
             <button
-              onClick={() => setIsYearly(true)}
-              className={`px-4 py-2 font-mono-cyber text-xs uppercase transition-all duration-300 flex items-center gap-1.5 ${isYearly ? 'bg-purple-600 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setIsRenta(true)}
+              className={`px-4 py-2 font-mono-cyber text-xs uppercase transition-all duration-300 flex items-center gap-1.5 ${isRenta ? 'bg-purple-600 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
             >
-              Anual <span className="bg-purple-950 text-purple-400 border border-purple-500/20 text-[9px] px-1 py-0.5 rounded uppercase font-black tracking-widest">-20%</span>
+              Renta <span className="bg-purple-950 text-purple-400 border border-purple-500/20 text-[9px] px-1 py-0.5 rounded uppercase font-black tracking-widest">-20%</span>
             </button>
           </div>
         </div>
@@ -405,7 +405,7 @@ export default function LandingPage() {
         {/* Pricing Cards Grid */}
         <div className="grid gap-8 md:grid-cols-3">
           {plans.map((p, i) => {
-            const price = isYearly ? p.priceYearly : p.priceMonthly
+            const price = isRenta ? p.priceRenta : p.priceCredits
             return (
               <div
                 key={i}
@@ -424,9 +424,11 @@ export default function LandingPage() {
 
                   <div className="flex items-baseline gap-2 mb-8">
                     <span className="font-mono-cyber text-4xl sm:text-5xl font-black text-white">${price}</span>
-                    <span className="font-mono-cyber text-xs uppercase text-gray-500">
-                      / {isYearly ? 'Año' : 'Mes'}
-                    </span>
+                    {isRenta && (
+                      <span className="font-mono-cyber text-xs uppercase text-gray-500">
+                        / Mes
+                      </span>
+                    )}
                   </div>
 
                   <hr className="border-purple-950/30 mb-6" />
