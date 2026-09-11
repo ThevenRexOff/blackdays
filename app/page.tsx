@@ -52,7 +52,7 @@ export default function LandingPage() {
         'Cifrado de datos básico',
         'Ancho de banda limitado a 5MB/s'
       ],
-      cta: 'Empezar Gratis',
+      cta: 'Comenzar a Trabajar',
       popular: false,
       color: 'border-gray-800'
     },
@@ -421,7 +421,7 @@ export default function LandingPage() {
             const priceUSD = isRenta ? p.priceRentaUSD : p.priceCreditsUSD
             const name = isRenta ? p.nameRenta : p.nameCredits
             const description = isRenta ? p.descriptionRenta : p.descriptionCredits
-            
+
             return (
               <div
                 key={i}
